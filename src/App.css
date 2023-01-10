@@ -1,5 +1,5 @@
 .App {
-  text-align: center;
+  text-align: left;
 }
 
 .App-logo {
@@ -35,4 +35,34 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.Canvas {
+    width: 102px;
+    height: 1200px;
+    border-right: solid 4px #ccf;
+}
+
+.Canvas-tick {
+    position: absolute;
+    left: 12px;
+    float: left;
+}
+
+.Canvas-event-name {
+    font-weight: 700;
+}
+
+.Canvas-event {
+    background-color: #ddd;
+    position: absolute;
+    float: left;
+    width: 200px;
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+.Events-container {
+    position: relative;
+    left: 108px;
 }
