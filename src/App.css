@@ -37,6 +37,15 @@
   }
 }
 
+.Timeline {
+    position: relative;
+    left: 100px;
+    top: 100px;
+    width: 1000px;
+    height: 1200px;
+    background: #eee;
+}
+
 .Canvas {
     width: 102px;
     height: 1200px;
@@ -64,4 +73,30 @@
 .Events-container {
     position: relative;
     left: 108px;
+}
+
+.arrow {
+	width: 120px;
+	position: absolute;
+	top: 73px;
+	left: -13px;
+	transform: rotate(292deg);
+	-webkit-transform: rotate(189deg);
+}
+
+.line {
+	margin-top: 14px;
+	width: 90px;
+	background: blue;
+	height: 10px;
+	float: left;
+}
+
+.point {
+	width: 0;
+	height: 0;
+	border-top: 20px solid transparent;
+	border-bottom: 20px solid transparent;
+	border-left: 30px solid blue;
+	float: right;
 }

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { Component, useEffect, useRef } from 'react'
 import './App.css';
 
 const state = {
     events: [
         {
-            name: "Worked at Patreon",
+            name: "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum ",
             image: "patreon_logo.png",
             date: new Date("2016-01-01"), // TEMP - remove
             startDate: "2016-01-07",
@@ -15,6 +15,7 @@ const state = {
             image: "mendozada_2016.png",
             date: new Date("2016-02-01"),
         },
+        /*
         {
             name: "Event designed to collide with Camp Grounded",
             image: "foo",
@@ -35,6 +36,7 @@ const state = {
             image: "camp_grounded.png",
             date: new Date("2017-01-01"),
         }
+        */
     ],
 };
 
@@ -202,10 +204,7 @@ function App() {
     const startDate = new Date("January 1, 2016");
     const endDate = new Date("December, 2018");
     const interval = 3 // number of months per "tick"
-
     const canvasHeight = 1500;
-    const numTicks = computeTicks(startDate, endDate, interval);
-    const spaceBetweenTicks = canvasHeight / numTicks;
 
     const eventRefs = useRef([]);
     let eventBoxes;
@@ -222,6 +221,7 @@ function App() {
         }
     })
 
+/*
     useEffect(() => {
         // Prep eventBoxes
         eventBoxes = state.events.map((e, i) => {
@@ -243,7 +243,7 @@ function App() {
                     top: b.y
                 }
                 this.setState
-                */
+                *//*
                 const style = "left:" + b.x + "px;top:" + b.y + "px" // HACK
                 ref.setAttribute('style', style)
                 return b
@@ -256,6 +256,7 @@ function App() {
             step()
         }
     })
+*/
 
     // HACK
     const [, updateState] = React.useState();
@@ -263,23 +264,135 @@ function App() {
 
     return (
         <div className="App">
-            <div className="Events-container">
-                {state.events.map((e, i) => {
-                    let date
-                    if (e.date) {
-                        date = e.date.toDateString()
-                    }
+            <TimelineUI
+                events={state.events}
+                startDate={startDate}
+                endDate={endDate}
+                canvasHeight={canvasHeight}
+                interval={interval}
+                />
+        </div>
+    );
+}
 
-                    return <div ref={el => eventRefs.current[i] = el}
-                                key={i}
-                                className="Canvas-event"
-                                onClick={forceUpdate}>
-                        <div className="Canvas-event-name">{e.name}</div>
-                        <div className="Canvas-event-date">{date}</div>
-                    </div>
-                })}
+
+class SimpleIterativeTimeline {
+
+    // TODO pull into utils
+    dayDiff(dateFrom, dateTo) {
+        const diffTime = Math.abs(dateTo - dateFrom);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    }
+
+    constructor(events, startDate, endDate, canvasHeight) {
+        // TODO possibly factor into own function; don't need to hold onto startDate, endDate and canvasHeight
+        // Could also project these on a plane from 0 to 1 and then have the timelineUI extrapolate them into real coords (!)
+        const totalDays = this.dayDiff(startDate, endDate)
+        this.boxes = events.map((e, i) => {
+            const x = Math.random() * 200 // 200 is a magic number to provide jitter
+
+            const days = this.dayDiff(startDate, e.date)
+            const y = (days / totalDays) * canvasHeight
+            
+            return new EventBox(e, x, y, 0, 0) 
+        });
+    }
+
+    step() {
+
+    }
+    
+}
+
+
+// class TimelineUI extends Component {
+const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
+
+    let timeline = null
+    let state = {
+        eventUIs: []
+    }
+
+    const eventRefs = useRef([]);
+
+    useEffect(() => {
+        init()
+        draw()
+    })
+
+    const init = () => {
+        if (!timeline) {
+            timeline = new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight)
+            // TODO Not passing the width and height into the timeline constructor to keep the timeline free from side-effecting UI as much as possible
+            events.map((e, i) => {
+                const ref = eventRefs.current[i]
+                const box = timeline.boxes[i]
+                const width = ref.clientWidth
+                const height = ref.clientHeight
+                box.width = width
+                box.height = height
+            })
+        }
+    }
+
+    const draw = () => {
+        timeline.boxes.map((b, i) => {
+            // Update positions
+            const ref = eventRefs.current[i]
+            // HACK move to props and setState if possible
+            const style = "left:" + b.x + "px;top:" + b.y + "px"
+            ref.setAttribute('style', style)
+
+            // Draw vectors
+/*
+			for (let j = 0; j < events.length; j++) {
+				ref.appendChild(
+					<div className="arrow">
+						<div className="line"></div>
+						<div className="point"></div>
+					</div>
+				)
+			}
+*/
+        });
+    }
+
+    const step = () => {
+        timeline.step()
+        draw()
+    }
+
+    const numTicks = computeTicks(startDate, endDate, interval)
+    const spaceBetweenTicks = canvasHeight / numTicks
+
+	const initUIBoxes = () => {
+		let uiBoxes = []
+		for (let i = 0; i < events.length; i++) {
+			const e = events[i]
+
+			let date
+			if (e.date) {
+				date = e.date.toDateString()
+			}
+
+			uiBoxes.push(
+				<div key={i}
+						ref={el => eventRefs.current[i] = el}
+						className="Canvas-event">
+					<div className="Canvas-event-name">{e.name}</div>
+					<div className="Canvas-event-date">{date}</div>
+				</div>
+			)
+		}
+		return uiBoxes
+	}
+
+    return (
+        <div className="Timeline" key="timeline">
+            <div className="Events-container" key="events-container">
+                {initUIBoxes()}
             </div>
-            <div className="Canvas">
+            <div className="Canvas" key="canvas">
                 {
                     Array.from(Array(numTicks), (e, i) => {
                         const style = {top: i * spaceBetweenTicks + "px"};
@@ -294,7 +407,7 @@ function App() {
                 }
             </div>
         </div>
-    );
+    )
 }
 
 export default App;
