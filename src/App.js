@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useRef } from 'react'
+import React, { Component, useEffect, useRef, useState } from 'react'
 import './App.css';
 
 const state = {
@@ -56,6 +56,7 @@ class EventBox {
         this.fx = 0
         this.fy = 0
         this.isOverlapping = false
+        this.angles = []
     }
 
     centerX = () => {
@@ -294,7 +295,7 @@ class SimpleIterativeTimeline {
             const days = this.dayDiff(startDate, e.date)
             const y = (days / totalDays) * canvasHeight
             
-            return new EventBox(e, x, y, 0, 0) 
+            return new EventBox(e, x, y, e.width, e.height) 
         });
     }
 
@@ -305,27 +306,39 @@ class SimpleIterativeTimeline {
 }
 
 const UIBox = React.forwardRef((props, ref) => {
-	const {i, events, name, date} = props
+    const {event, box} = props
+    /*
     const vectorRefs = useRef([]);
-
     useEffect(() => {
     	const ref = vectorRefs.current[i]
     })
+    */
+
+    let date
+    if (event.date) {
+        date = event.date.toDateString()
+    }
+
+    let vectors = []
+    if (typeof box !== "undefined") {
+        box.angles.map((angle, j) => {
+            const style = {
+                "-webkit-transform": "rotate(" + angle + "deg)"
+            }
+            vectors.push(
+                <div key={j} className="arrow" style={style} /*ref={el => vectorRefs[j] = el}*/>
+                    <div className="line"></div>
+                    <div className="point"></div>
+                </div>
+            )
+        })
+    }
 
 	return (
-		<div key={i} className="Canvas-event" ref={ref} {...props}>
-			<div className="Canvas-event-name">{name}</div>
+		<div className="Canvas-event" ref={ref}>
+			<div className="Canvas-event-name">{event.name}</div>
 			<div className="Canvas-event-date">{date}</div>
-			{
-				events.map((e, i) => {
-					return (
-						<div className="arrow" ref={el => vectorRefs[i] = el}>
-							<div className="line"></div>
-							<div className="point"></div>
-						</div>
-					)
-				})
-			}
+			{vectors}
 		</div>
 	)
 });
@@ -333,10 +346,8 @@ const UIBox = React.forwardRef((props, ref) => {
 // class TimelineUI extends Component {
 const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
-    let timeline = null
-    let state = {
-        eventUIs: []
-    }
+    const [timeline, setTimeline] = useState(null)
+    const [boxes, setBoxes] = useState([])
 
     const eventRefs = useRef([]);
 
@@ -347,37 +358,44 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
     const init = () => {
         if (!timeline) {
-            timeline = new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight)
-            // TODO Not passing the width and height into the timeline constructor to keep the timeline free from side-effecting UI as much as possible
+            console.log("timeline " + !timeline)
+
             events.map((e, i) => {
                 const ref = eventRefs.current[i]
-                const box = timeline.boxes[i]
-                const width = ref.clientWidth
-                const height = ref.clientHeight
-                box.width = width
-                box.height = height
+                console.log("REF " + ref)
+                e.width = ref.clientWidth
+                e.height = ref.clientHeight
             })
+
+            setTimeline(new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight))
         }
     }
 
     const draw = () => {
-        timeline.boxes.map((b, i) => {
-            // Update positions
-            const ref = eventRefs.current[i]
-            // HACK move to props and setState if possible
-            const style = "left:" + b.x + "px;top:" + b.y + "px"
-            ref.setAttribute('style', style)
+        if (timeline) {
+            timeline.boxes.map((b, i) => {
+                // Update positions
+                const ref = eventRefs.current[i]
+                // HACK move to props and setState if possible
+                const style = "left:" + b.x + "px;top:" + b.y + "px"
+                ref.setAttribute('style', style)
 
-            // Draw vectors
-        	timeline.boxes.map((boxB, i) => {
-				const boxA = b
-				const dx = boxB.centerX() - boxA.centerX()
-				const dy = boxB.centerY() - boxA.centerY()
-				const angle = Math.atan2(dy, dx) * 180 / Math.PI	
-				console.log("angle " + angle)
-			})
+                // Draw vectors
+                timeline.boxes.map((boxB, j) => {
+                    const boxA = b
+                    const dx = boxB.centerX() - boxA.centerX()
+                    const dy = boxB.centerY() - boxA.centerY()
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI	
+                    boxA.angles[i] = angle
+                    boxB.angles[j] = 360 - angle
+                    console.log("angle " + angle)
+                })
 
-        });
+            });
+
+            setBoxes(timeline.boxes)
+        }
+
 
 		// this.forceUpdate()
     }
@@ -395,18 +413,13 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 		for (let i = 0; i < events.length; i++) {
 			const e = events[i]
 
-			let date
-			if (e.date) {
-				date = e.date.toDateString()
-			}
+            let box
+            if (i < boxes.length) {
+                box = boxes[i]
+            }
 
 			uiBoxes.push(
-				<UIBox
-					i={i}
-					events={events}
-					name={e.name}
-					date={date}
-					ref={el => eventRefs.current[i] = el}/>
+				<UIBox event={e} box={box} ref={el => eventRefs.current[i] = el} />
 			)
 		}
 		return uiBoxes
@@ -424,6 +437,7 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                         const offsetDate = new Date(startDate)
                         const tickDate = new Date(offsetDate.setMonth(offsetDate.getMonth() + (i * interval)))
                         return <div
+                            key={i}
                             className="Canvas-tick"
                             style={style}>
                                 {tickDate.toLocaleDateString('en-us', { year:"numeric", month:"short", day:"numeric"})}
