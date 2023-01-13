@@ -304,6 +304,15 @@ class SimpleIterativeTimeline {
     
 }
 
+const UIBox = React.forwardRef((props, ref) => {
+	const {i, name, date} = props
+	return (
+		<div key={i} className="Canvas-event" ref={ref} {...props}>
+			<div className="Canvas-event-name">{name}</div>
+			<div className="Canvas-event-date">{date}</div>
+		</div>
+	)
+});
 
 // class TimelineUI extends Component {
 const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
@@ -376,12 +385,11 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 			}
 
 			uiBoxes.push(
-				<div key={i}
-						ref={el => eventRefs.current[i] = el}
-						className="Canvas-event">
-					<div className="Canvas-event-name">{e.name}</div>
-					<div className="Canvas-event-date">{date}</div>
-				</div>
+				<UIBox
+					i={i}
+					name={e.name}
+					date={date}
+					ref={el => eventRefs.current[i] = el} />
 			)
 		}
 		return uiBoxes
