@@ -305,11 +305,27 @@ class SimpleIterativeTimeline {
 }
 
 const UIBox = React.forwardRef((props, ref) => {
-	const {i, name, date} = props
+	const {i, events, name, date} = props
+    const vectorRefs = useRef([]);
+
+    useEffect(() => {
+    	const ref = vectorRefs.current[i]
+    })
+
 	return (
 		<div key={i} className="Canvas-event" ref={ref} {...props}>
 			<div className="Canvas-event-name">{name}</div>
 			<div className="Canvas-event-date">{date}</div>
+			{
+				events.map((e, i) => {
+					return (
+						<div className="arrow" ref={el => vectorRefs[i] = el}>
+							<div className="line"></div>
+							<div className="point"></div>
+						</div>
+					)
+				})
+			}
 		</div>
 	)
 });
@@ -353,17 +369,17 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
             ref.setAttribute('style', style)
 
             // Draw vectors
-/*
-			for (let j = 0; j < events.length; j++) {
-				ref.appendChild(
-					<div className="arrow">
-						<div className="line"></div>
-						<div className="point"></div>
-					</div>
-				)
-			}
-*/
+        	timeline.boxes.map((boxB, i) => {
+				const boxA = b
+				const dx = boxB.centerX() - boxA.centerX()
+				const dy = boxB.centerY() - boxA.centerY()
+				const angle = Math.atan2(dy, dx) * 180 / Math.PI	
+				console.log("angle " + angle)
+			})
+
         });
+
+		// this.forceUpdate()
     }
 
     const step = () => {
@@ -387,9 +403,10 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 			uiBoxes.push(
 				<UIBox
 					i={i}
+					events={events}
 					name={e.name}
 					date={date}
-					ref={el => eventRefs.current[i] = el} />
+					ref={el => eventRefs.current[i] = el}/>
 			)
 		}
 		return uiBoxes
