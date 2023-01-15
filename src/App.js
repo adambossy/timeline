@@ -300,7 +300,13 @@ class SimpleIterativeTimeline {
     }
 
     step() {
-
+		this.boxes.map((b, i) => {
+			b.vectors.map((v, j) => {
+				const [dx, dy] = v
+				b.x -= dx
+				b.y -= dy
+			})
+		})
     }
     
 }
@@ -439,6 +445,9 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
     return (
         <div className="Timeline" key="timeline">
+			<button onClick={step}>
+				Step
+			</button>
             <div className="Events-container" key="events-container">
                 {initUIBoxes()}
             </div>
