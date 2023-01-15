@@ -86,7 +86,8 @@
 
 .line {
 	margin-top: 14px;
-	width: 90px;
+	margin-left: 45px; 
+    width: 45px;
 	background: blue;
 	height: 10px;
 	float: left;

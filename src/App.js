@@ -293,7 +293,7 @@ class SimpleIterativeTimeline {
             const x = Math.random() * 200 // 200 is a magic number to provide jitter
 
             const days = this.dayDiff(startDate, e.date)
-            const y = (days / totalDays) * canvasHeight
+            const y = Math.random() * 600 // (days / totalDays) * canvasHeight
             
             return new EventBox(e, x, y, e.width, e.height) 
         });
@@ -323,10 +323,13 @@ const UIBox = React.forwardRef((props, ref) => {
     if (typeof box !== "undefined") {
         box.angles.map((angle, j) => {
             const style = {
-                "-webkit-transform": "rotate(" + angle + "deg)"
+                left: (box.width / 2 - 60) + "px", // MAGIC NUMBER ALERT
+                top: (box.height / 2 - 20) + "px",  // MAGIC NUMBER ALERT
+                WebkitTransform: "rotate(" + angle + "deg)"
             }
             vectors.push(
                 <div key={j} className="arrow" style={style} /*ref={el => vectorRefs[j] = el}*/>
+                    <div className="shim"></div>
                     <div className="line"></div>
                     <div className="point"></div>
                 </div>
@@ -362,7 +365,6 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
             events.map((e, i) => {
                 const ref = eventRefs.current[i]
-                console.log("REF " + ref)
                 e.width = ref.clientWidth
                 e.height = ref.clientHeight
             })
@@ -382,12 +384,16 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
                 // Draw vectors
                 timeline.boxes.map((boxB, j) => {
+                    if (i == j) {
+                        return
+                    }
                     const boxA = b
                     const dx = boxB.centerX() - boxA.centerX()
                     const dy = boxB.centerY() - boxA.centerY()
                     const angle = Math.atan2(dy, dx) * 180 / Math.PI	
                     boxA.angles[i] = angle
-                    boxB.angles[j] = 360 - angle
+                    boxB.angles[j] = (angle + 180) % 360
+                    console.log("boxA " + boxA.event.name)
                     console.log("angle " + angle)
                 })
 
