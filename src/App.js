@@ -15,12 +15,12 @@ const state = {
             image: "mendozada_2016.png",
             date: new Date("2016-02-01"),
         },
-        /*
         {
             name: "Event designed to collide with Camp Grounded",
             image: "foo",
             date: new Date("2016-05-01"),
         },
+        /*
         {
             name: "Camp Grounded",
             image: "camp_grounded.png",
@@ -391,8 +391,8 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                     const dx = boxB.centerX() - boxA.centerX()
                     const dy = boxB.centerY() - boxA.centerY()
                     const angle = Math.atan2(dy, dx) * 180 / Math.PI	
-                    boxA.angles[i] = angle
-                    boxB.angles[j] = (angle + 180) % 360
+                    boxA.angles[j] = angle
+                    boxB.angles[i] = (angle + 180) % 360
                     console.log("boxA " + boxA.event.name)
                     console.log("angle " + angle)
                 })

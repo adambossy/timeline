@@ -67,7 +67,18 @@
     position: absolute;
     float: left;
     width: 200px;
-    padding: 0.5em;
+    background: linear-gradient(#000, #000) no-repeat center/2px 100%;
+}
+
+.Canvas-event:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  border-top: 1px solid black;
+  background: black;
+  width: 100%;
+  transform: translateY(-50%);
 }
 
 .Events-container {
@@ -86,8 +97,8 @@
 
 .line {
 	margin-top: 14px;
-	margin-left: 45px; 
-    width: 45px;
+	margin-left: 60px; 
+    width: 30px;
 	background: blue;
 	height: 10px;
 	float: left;
