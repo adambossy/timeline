@@ -71,14 +71,14 @@
 }
 
 .Canvas-event:before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  border-top: 1px solid black;
-  background: black;
-  width: 100%;
-  transform: translateY(-50%);
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 0;
+	border-top: 1px solid black;
+	background: black;
+	width: 100%;
+	transform: translateY(-50%);
 }
 
 .Events-container {
@@ -87,28 +87,26 @@
 }
 
 .arrow {
-	width: 120px;
+	width: 920px;
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	transform: rotate(0deg);
-	-webkit-transform: rotate(0deg);
 }
 
 .line {
-	margin-top: 14px;
-	margin-left: 60px; 
-    width: 30px;
+	margin-top: 4px; /* .point border-top-width + .point border-bottom-width / 2 */
+	margin-left: 460px; /* .arrow width / 2 */
+    width: 444px; /* .arrow width / 2 - .point border-left-width */
 	background: blue;
-	height: 10px;
+	height: 2px;
 	float: left;
 }
 
 .point {
 	width: 0;
 	height: 0;
-	border-top: 20px solid transparent;
-	border-bottom: 20px solid transparent;
-	border-left: 30px solid blue;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent; /* border-top width */
+	border-left: 16px solid blue;
 	float: right;
 }

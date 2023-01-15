@@ -56,7 +56,7 @@ class EventBox {
         this.fx = 0
         this.fy = 0
         this.isOverlapping = false
-        this.angles = []
+        this.vectors = []
     }
 
     centerX = () => {
@@ -321,16 +321,25 @@ const UIBox = React.forwardRef((props, ref) => {
 
     let vectors = []
     if (typeof box !== "undefined") {
-        box.angles.map((angle, j) => {
-            const style = {
-                left: (box.width / 2 - 60) + "px", // MAGIC NUMBER ALERT
-                top: (box.height / 2 - 20) + "px",  // MAGIC NUMBER ALERT
+        box.vectors.map((vector, j) => {
+			const [dx, dy] = vector
+			const angle = Math.atan2(dy, dx) * 180 / Math.PI
+			const length = Math.sqrt(dx * dx + dy * dy)
+
+			const vectorStyle = {
+                left: ((box.width - length) / 2) + "px",
+                top: (box.height / 2 - 5) + "px",  // MAGIC NUMBER ALERT .point border-top-width
+				width: length + "px",
+                Transform: "rotate(" + angle + "deg)",
                 WebkitTransform: "rotate(" + angle + "deg)"
             }
+			const lineStyle = {
+				marginLeft: length / 2 + "px",
+				width: length / 2 - 16 + "px" // MAGIC NUMBER ALERT .point border-left-width
+			}
             vectors.push(
-                <div key={j} className="arrow" style={style} /*ref={el => vectorRefs[j] = el}*/>
-                    <div className="shim"></div>
-                    <div className="line"></div>
+                <div key={j} className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
+                    <div className="line" style={lineStyle}></div>
                     <div className="point"></div>
                 </div>
             )
@@ -390,11 +399,8 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                     const boxA = b
                     const dx = boxB.centerX() - boxA.centerX()
                     const dy = boxB.centerY() - boxA.centerY()
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI	
-                    boxA.angles[j] = angle
-                    boxB.angles[i] = (angle + 180) % 360
-                    console.log("boxA " + boxA.event.name)
-                    console.log("angle " + angle)
+					boxA.vectors[j] = [dx, dy]
+					boxB.vectors[i] = [-dx, -dy]
                 })
 
             });
