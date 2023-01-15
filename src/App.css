@@ -68,6 +68,7 @@
     float: left;
     width: 200px;
     background: linear-gradient(#000, #000) no-repeat center/2px 100%;
+	border: 1px solid black;
 }
 
 .Canvas-event:before {

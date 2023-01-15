@@ -15,12 +15,12 @@ const state = {
             image: "mendozada_2016.png",
             date: new Date("2016-02-01"),
         },
+        /*
         {
             name: "Event designed to collide with Camp Grounded",
             image: "foo",
             date: new Date("2016-05-01"),
         },
-        /*
         {
             name: "Camp Grounded",
             image: "camp_grounded.png",
@@ -222,43 +222,6 @@ function App() {
         }
     })
 
-/*
-    useEffect(() => {
-        // Prep eventBoxes
-        eventBoxes = state.events.map((e, i) => {
-            const ref = eventRefs.current[i]
-            return new EventBox(e, Math.random() * 200, -1, ref.clientWidth, ref.clientHeight)
-        });
-
-        const timeline = new Iterative2DTimeline()
-
-        function step() {
-            timeline.create(eventBoxes, startDate, endDate, canvasHeight)
-
-            // Apply creation results
-            eventBoxes.map((b, i) => {
-                const ref = eventRefs.current[i]
-                /*
-                const style = {
-                    left: b.x,
-                    top: b.y
-                }
-                this.setState
-                *//*
-                const style = "left:" + b.x + "px;top:" + b.y + "px" // HACK
-                ref.setAttribute('style', style)
-                return b
-            });
-
-            // setTimeout(() => step(), 1000)
-        }
-
-        for (let i = 0; i < 100; i++) {
-            step()
-        }
-    })
-*/
-
     // HACK
     const [, updateState] = React.useState();
     const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -299,13 +262,35 @@ class SimpleIterativeTimeline {
         });
     }
 
+    projectionOverlaps(minA, maxA, minB, maxB) {
+        return maxA >= minB && maxB >= minA
+    }
+
+    isOverlapping(boxA, boxB) {
+        return this.projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
+            this.projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
+    }
+
     step() {
-		this.boxes.map((b, i) => {
-			b.vectors.map((v, j) => {
-				const [dx, dy] = v
-				b.x -= dx
-				b.y -= dy
+		this.boxes.map((boxA, i) => {
+			this.boxes.map((boxB, j) => {
+				// Compute vectors
+				if (this.isOverlapping(boxA, boxB)) {
+					if (i == j) {
+						return
+					}
+					const dx = boxB.centerX() - boxA.centerX()
+					const dy = boxB.centerY() - boxA.centerY()
+					boxA.vectors[j] = [dx, dy]
+					boxB.vectors[i] = [-dx, -dy]
+
+					boxA.x -= dx
+					boxA.y -= dy
+					boxB.x += dx
+					boxB.y += dy
+				}
 			})
+
 		})
     }
     
@@ -397,6 +382,7 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                 const style = "left:" + b.x + "px;top:" + b.y + "px"
                 ref.setAttribute('style', style)
 
+/*
                 // Draw vectors
                 timeline.boxes.map((boxB, j) => {
                     if (i == j) {
@@ -408,7 +394,7 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 					boxA.vectors[j] = [dx, dy]
 					boxB.vectors[i] = [-dx, -dy]
                 })
-
+*/
             });
 
             setBoxes(timeline.boxes)
