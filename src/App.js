@@ -282,7 +282,9 @@ class SimpleIterativeTimeline {
 					const dx = boxB.centerX() - boxA.centerX()
 					const dy = boxB.centerY() - boxA.centerY()
 					boxA.vectors[j] = [dx, dy]
+					console.log("boxA.vectors[" + j + "] " + dx + ", " + dy)
 					boxB.vectors[i] = [-dx, -dy]
+					console.log("boxB.vectors[" + i + "] " + dx + ", " + dy)
 
 					boxA.x -= dx
 					boxA.y -= dy
@@ -337,6 +339,7 @@ const UIBox = React.forwardRef((props, ref) => {
         })
     }
 
+	console.log("rendering UIBox " + event.name)
 	return (
 		<div className="Canvas-event" ref={ref}>
 			<div className="Canvas-event-name">{event.name}</div>
@@ -355,13 +358,13 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
     const eventRefs = useRef([]);
 
     useEffect(() => {
-        init()
+        init2()
         draw()
     })
 
-    const init = () => {
+    const init2 = () => {
         if (!timeline) {
-            console.log("timeline " + !timeline)
+            console.log("!timeline " + !timeline)
 
             events.map((e, i) => {
                 const ref = eventRefs.current[i]
@@ -369,6 +372,7 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                 e.height = ref.clientHeight
             })
 
+			console.log("setTimeline " + timeline)
             setTimeline(new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight))
         }
     }
@@ -397,11 +401,9 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 */
             });
 
+			console.log("setBoxes " + timeline.boxes)
             setBoxes(timeline.boxes)
         }
-
-
-		// this.forceUpdate()
     }
 
     const step = () => {
@@ -429,6 +431,7 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 		return uiBoxes
 	}
 
+	console.log("rendering timeline")
     return (
         <div className="Timeline" key="timeline">
 			<button onClick={step}>
