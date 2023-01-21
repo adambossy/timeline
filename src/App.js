@@ -53,8 +53,6 @@ class EventBox {
         this.y = y
         this.width = width
         this.height = height
-        this.fx = 0
-        this.fy = 0
         this.isOverlapping = false
         this.vectors = []
     }
@@ -114,88 +112,6 @@ class SimpleVerticalTimeline {
 }
 
 
-class Iterative2DTimeline {
-
-    margin = 10
-
-    projectionOverlaps(minA, maxA, minB, maxB) {
-        return maxA >= minB && maxB >= minA
-    }
-
-    isOverlapping(boxA, boxB) {
-        return this.projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
-            this.projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
-    }
-
-    totalDays(startDate, endDate) {
-        return this.dayDiff(startDate, endDate)
-    }
-
-    dayDiff(dateFrom, dateTo) {
-        const diffTime = Math.abs(dateTo - dateFrom);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    }
-
-    repulsive_force = 12250
-    ticks = 100
-
-    create(eventBoxes, startDate, endDate, canvasHeight) {
-        const totalDays = this.totalDays(startDate, endDate)
-
-        eventBoxes.forEach(function(box) {
-            box.isOverlapping = false
-        })
-
-        for (let i = 0; i < eventBoxes.length; i++) {
-            const boxA = eventBoxes[i]
-
-            if (boxA.y = -1) { // HACK! Move to init function on this class
-                const days = this.dayDiff(startDate, boxA.event.date)
-                boxA.y = (days / totalDays) * canvasHeight
-            }
-
-            for (let j = i + 1; j < eventBoxes.length; j++) {
-                const boxB = eventBoxes[j]
-                if (this.isOverlapping(boxA, boxB)) {
-                    boxA.isOverlapping = true 
-                    boxB.isOverlapping = true 
-                    const dx = boxB.centerX() - boxA.centerX()
-                    const dy = boxB.centerY() - boxA.centerY()
-                    const distanceSquared = dx * dx + dy * dy
-                    const distance = Math.sqrt(distanceSquared)
-                    const force = this.repulsive_force / distanceSquared
-                    const fx = force * dx / distance
-                    const fy = force * dy / distance
-                    boxA.fx -= fx
-                    boxA.fy -= fy
-                    boxB.fx += fx
-                    boxB.fy += fy
-                    console.log("OVERLAPS! " + boxA.event.name + " & " + boxB.event.name +
-                        "\n dx " + dx +
-                        "\n dy " + dy +
-                        "\n distanceSquared " + distanceSquared +
-                        "\n distance " + distance +
-                        "\n force " + force +
-                        "\n fx " + fx +
-                        "\n fy " + fy)
-                }
-            }
-        }
-
-        eventBoxes.forEach(function(box) {
-            if (box.isOverlapping) {
-                box.x += box.fx
-                box.y += box.fy
-            } else {
-                box.fx = 0
-                box.fy = 0
-            }
-        })
-
-        return eventBoxes
-    }
-}
-
 function monthDiff(dateFrom, dateTo) {
     return dateTo.getMonth() - dateFrom.getMonth() +
    (12 * (dateTo.getFullYear() - dateFrom.getFullYear()))
@@ -228,8 +144,8 @@ function App() {
 
     return (
         <div className="App">
-            <TimelineUI
-                events={state.events}
+            <Timeline
+                eventsData={state.events}
                 startDate={startDate}
                 endDate={endDate}
                 canvasHeight={canvasHeight}
@@ -249,17 +165,6 @@ class SimpleIterativeTimeline {
     }
 
     constructor(events, startDate, endDate, canvasHeight) {
-        // TODO possibly factor into own function; don't need to hold onto startDate, endDate and canvasHeight
-        // Could also project these on a plane from 0 to 1 and then have the timelineUI extrapolate them into real coords (!)
-        const totalDays = this.dayDiff(startDate, endDate)
-        this.boxes = events.map((e, i) => {
-            const x = Math.random() * 200 // 200 is a magic number to provide jitter
-
-            const days = this.dayDiff(startDate, e.date)
-            const y = Math.random() * 600 // (days / totalDays) * canvasHeight
-            
-            return new EventBox(e, x, y, e.width, e.height) 
-        });
     }
 
     projectionOverlaps(minA, maxA, minB, maxB) {
@@ -298,14 +203,33 @@ class SimpleIterativeTimeline {
     
 }
 
+const Vector = (props) => {
+	const {width, height, dx, dy} = props
+	const angle = Math.atan2(dy, dx) * 180 / Math.PI
+	const length = Math.sqrt(dx * dx + dy * dy) / 2
+
+	const vectorStyle = {
+		left: ((width - length) / 2) + "px",
+		top: (height / 2 - 5) + "px",  // MAGIC NUMBER ALERT .point border-top-width
+		width: length + "px",
+		Transform: "rotate(" + angle + "deg)",
+		WebkitTransform: "rotate(" + angle + "deg)"
+	}
+	const lineStyle = {
+		marginLeft: length / 2 + "px",
+		width: length / 2 - 16 + "px" // MAGIC NUMBER ALERT .point border-left-width
+	}
+	console.log("rendering Vector")
+	return (
+		<div className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
+			<div className="line" style={lineStyle}></div>
+			<div className="point"></div>
+		</div>
+	)
+}
+
 const UIBox = React.forwardRef((props, ref) => {
     const {event, box} = props
-    /*
-    const vectorRefs = useRef([]);
-    useEffect(() => {
-    	const ref = vectorRefs.current[i]
-    })
-    */
 
     let date
     if (event.date) {
@@ -316,25 +240,8 @@ const UIBox = React.forwardRef((props, ref) => {
     if (typeof box !== "undefined") {
         box.vectors.map((vector, j) => {
 			const [dx, dy] = vector
-			const angle = Math.atan2(dy, dx) * 180 / Math.PI
-			const length = Math.sqrt(dx * dx + dy * dy)
-
-			const vectorStyle = {
-                left: ((box.width - length) / 2) + "px",
-                top: (box.height / 2 - 5) + "px",  // MAGIC NUMBER ALERT .point border-top-width
-				width: length + "px",
-                Transform: "rotate(" + angle + "deg)",
-                WebkitTransform: "rotate(" + angle + "deg)"
-            }
-			const lineStyle = {
-				marginLeft: length / 2 + "px",
-				width: length / 2 - 16 + "px" // MAGIC NUMBER ALERT .point border-left-width
-			}
             vectors.push(
-                <div key={j} className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
-                    <div className="line" style={lineStyle}></div>
-                    <div className="point"></div>
-                </div>
+                <Vector width={box.width} height={box.height} dx={dx} dy={dy} />
             )
         })
     }
@@ -349,11 +256,22 @@ const UIBox = React.forwardRef((props, ref) => {
 	)
 });
 
-// class TimelineUI extends Component {
 const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 
-    const [timeline, setTimeline] = useState(null)
-    const [boxes, setBoxes] = useState([])
+	let timeline = null
+
+	const defaultData = {
+		nmae: "foo",
+		image: "bar.png",
+		date: "patreon_logo.png",
+		x: 0, // setCoords
+		y: 0,
+		width: 100, // getSize
+		height: 100
+	}
+
+    // const [timeline, setTimeline] = useState(null)
+	const [boxes, setBoxes] = useState([])
 
     const eventRefs = useRef([]);
 
@@ -363,18 +281,29 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
     })
 
     const init2 = () => {
-        if (!timeline) {
-            console.log("!timeline " + !timeline)
+		events.map((e, i) => {
+			const ref = eventRefs.current[i]
+			e.width = ref.clientWidth
+			e.height = ref.clientHeight
+		})
 
-            events.map((e, i) => {
-                const ref = eventRefs.current[i]
-                e.width = ref.clientWidth
-                e.height = ref.clientHeight
-            })
+/*
+        // TODO possibly factor into own function; don't need to hold onto startDate, endDate and canvasHeight
+        // Could also project these on a plane from 0 to 1 and then have the timelineUI extrapolate them into real coords (!)
+        const totalDays = this.dayDiff(startDate, endDate)
+        this.boxes = events.map((e, i) => {
+            const x = Math.random() * 200 // 200 is a magic number to provide jitter
 
-			console.log("setTimeline " + timeline)
-            setTimeline(new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight))
-        }
+            const days = this.dayDiff(startDate, e.date)
+            const y = Math.random() * 600 // (days / totalDays) * canvasHeight
+            
+            return new EventBox(e, x, y, e.width, e.height) 
+        });
+*/
+
+		console.log("init2")
+		// console.log("setTimeline " + timeline)
+		// setTimeline(new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight))
     }
 
     const draw = () => {
@@ -385,24 +314,10 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                 // HACK move to props and setState if possible
                 const style = "left:" + b.x + "px;top:" + b.y + "px"
                 ref.setAttribute('style', style)
-
-/*
-                // Draw vectors
-                timeline.boxes.map((boxB, j) => {
-                    if (i == j) {
-                        return
-                    }
-                    const boxA = b
-                    const dx = boxB.centerX() - boxA.centerX()
-                    const dy = boxB.centerY() - boxA.centerY()
-					boxA.vectors[j] = [dx, dy]
-					boxB.vectors[i] = [-dx, -dy]
-                })
-*/
             });
 
-			console.log("setBoxes " + timeline.boxes)
-            setBoxes(timeline.boxes)
+			console.log("setTimeline " + timeline)
+            // setTimeline(timeline)
         }
     }
 
@@ -420,8 +335,8 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 			const e = events[i]
 
             let box
-            if (i < boxes.length) {
-                box = boxes[i]
+            if (timeline) {
+                box = timeline.boxes[i]
             }
 
 			uiBoxes.push(
@@ -457,6 +372,46 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
             </div>
         </div>
     )
+}
+
+const Box = ({ event }) => {
+	console.log("rendering Box " + event.name)
+	return (
+		<div className="Canvas-event" style={{ top: event.y, left: event.x }}>
+			<div className="Canvas-event-name">{event.name}</div>
+			<div className="Canvas-event-date">{event.date.toString()}</div>
+		</div>
+	)
+}
+
+const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) => {
+
+	const [ events, setEvents ] = useState(eventsData)
+
+	function step() {
+		console.log("step")
+		events.map((e, i) => {
+			e.x = Math.random() * 800
+			e.y = Math.random() * 800
+			return e
+		})
+		const eventsCopy = [ ...events ]
+		setEvents(eventsCopy)
+	}
+
+	console.log("rendering Timeline")
+	return (
+		<div className="Timeline" key="timeline">
+			<button onClick={step}>
+				Step
+			</button>
+			<div>
+				{events.map((e, i) => {
+					return <Box event={e} />
+				})}
+			</div>
+		</div>
+	)
 }
 
 export default App;
