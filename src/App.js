@@ -9,14 +9,17 @@ const state = {
             date: new Date("2016-01-01"), // TEMP - remove
             startDate: "2016-01-07",
             endDate: "2018-11-09",
-			// unflatten these at some point (turn `events` into `boxes` and stuff event data into `event` val)
-			vectors: []
+			box: {
+				vectors: []
+			}
         },
         {
             name: "Mendozada",
             image: "mendozada_2016.png",
             date: new Date("2016-02-01"),
-			vectors: []
+			box: {
+				vectors: []
+			}
         },
         /*
         {
@@ -378,21 +381,22 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 }
 
 const Box = React.forwardRef((props, ref) => {
-	const { event } = props
+	const { e } = props
+	const box = e.box // convenience
 
     let vectors = []
-	event.vectors.map((vector, j) => {
+	box.vectors.map((vector, j) => {
 		const [otherBox, dx, dy] = vector
 		vectors.push(
-			<Vector width={event.width} height={event.height} dx={dx} dy={dy} />
+			<Vector width={box.width} height={box.height} dx={dx} dy={dy} />
 		)
 	})
 
-	console.log("rendering Box " + event.name)
+	console.log("rendering Box " + e.name)
 	return (
-		<div className="Canvas-event" ref={ref} style={{ top: event.y, left: event.x }}>
-			<div className="Canvas-event-name">{event.name}</div>
-			<div className="Canvas-event-date">{event.date.toString()}</div>
+		<div className="Canvas-event" ref={ref} style={{ top: box.y, left: box.x }}>
+			<div className="Canvas-event-name">{e.name}</div>
+			<div className="Canvas-event-date">{e.date.toString()}</div>
 			{vectors}
 		</div>
 	)
@@ -404,9 +408,10 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
     const eventRefs = useRef([]);
 
 	events.map((e, i) => {
-		if (!e.x) {
-			e.x = Math.random() * 200 + 1
-			e.y = Math.random() * 200 + 1
+		const box = e.box // convenience
+		if (!box.x) {
+			box.x = Math.random() * 200 + 1
+			box.y = Math.random() * 200 + 1
 		}
 	})
 
@@ -416,9 +421,10 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			console.log("initial render")
 			// This gets called on every render, and it's fine because it's idempotent
 			events.map((e, i) => {
+				const box = e.box // convenience
 				const ref = eventRefs.current[i]
-				e.width = ref.clientWidth
-				e.height = ref.clientHeight
+				box.width = ref.clientWidth
+				box.height = ref.clientHeight
 			})
 			computeVectors()
 			const eventsCopy = [ ...events ]
@@ -447,7 +453,8 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 
 	const computeVectors = () => {
 		// TODO fix up naming (events / boxA&B)
-		events.map((boxA, i) => {
+		events.map((e, i) => {
+			const boxA = e.box // convenience
 			if (!boxA.x) {
 				throw new Error("x is undefined for box " + boxA.name)
 			}
@@ -460,7 +467,8 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			if (!boxA.height) {
 				throw new Error("height is undefined for box " + boxA.name)
 			}
-			events.map((boxB, j) => {
+			events.map((e2, j) => {
+				const boxB = e2.box // convenience
 				if (isOverlapping(boxA, boxB)) {
 					if (i == j) {
 						return boxB
@@ -478,14 +486,14 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	}
 
 	const applyVectors = () => {
-		events.map((event, i) => {
-			event.vectors.map((vector, j) => {
+		events.map((e, i) => {
+			e.box.vectors.map((vector, j) => {
 				// apply only if overlapping
 				const [ otherBox, dx, dy ] = vector
 				// TODO fix up naming inconsistencies
-				if (isOverlapping(event, otherBox)) {
-					event.x -= dx / 2
-					event.y -= dy / 2
+				if (isOverlapping(e.box, otherBox)) {
+					e.box.x -= dx / 2
+					e.box.y -= dy / 2
 				}
 			})
 		})
@@ -507,7 +515,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			</button>
 			<div>
 				{events.map((e, i) => {
-					return <Box event={e} ref={el => eventRefs.current[i] = el} />
+					return <Box e={e} ref={el => eventRefs.current[i] = el} />
 				})}
 			</div>
 		</div>
