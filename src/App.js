@@ -231,138 +231,16 @@ const Vector = (props) => {
 	)
 }
 
-const UIBox = React.forwardRef((props, ref) => {
-    const {event, box} = props
-
-    let date
-    if (event.date) {
-        date = event.date.toDateString()
-    }
-
-    let vectors = []
-    if (typeof box !== "undefined") {
-        box.vectors.map((vector, j) => {
-			const [dx, dy] = vector
-            vectors.push(
-                <Vector width={box.width} height={box.height} dx={dx} dy={dy} />
-            )
-        })
-    }
-
-	return (
-		<div className="Canvas-event" ref={ref}>
-			<div className="Canvas-event-name">{event.name}</div>
-			<div className="Canvas-event-date">{date}</div>
-			{vectors}
-		</div>
-	)
-});
-
-const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
-
-	let timeline = null
-
-	const defaultData = {
-		nmae: "foo",
-		image: "bar.png",
-		date: "patreon_logo.png",
-		x: 0, // setCoords
-		y: 0,
-		width: 100, // getSize
-		height: 100
-	}
-
-    // const [timeline, setTimeline] = useState(null)
-	const [boxes, setBoxes] = useState([])
-
-    const eventRefs = useRef([]);
-
-    useEffect(() => {
-        init2()
-        draw()
-    })
-
-    const init2 = () => {
-		events.map((e, i) => {
-			const ref = eventRefs.current[i]
-			e.width = ref.clientWidth
-			e.height = ref.clientHeight
-		})
-    }
-
-    const draw = () => {
-        if (timeline) {
-            timeline.boxes.map((b, i) => {
-                // Update positions
-                const ref = eventRefs.current[i]
-                // HACK move to props and setState if possible
-                const style = "left:" + b.x + "px;top:" + b.y + "px"
-                ref.setAttribute('style', style)
-            });
-        }
-    }
-
-    const step = () => {
-        timeline.step()
-        draw()
-    }
-
-    const numTicks = computeTicks(startDate, endDate, interval)
-    const spaceBetweenTicks = canvasHeight / numTicks
-
-	const initUIBoxes = () => {
-		let uiBoxes = []
-		for (let i = 0; i < events.length; i++) {
-			const e = events[i]
-
-            let box
-            if (timeline) {
-                box = timeline.boxes[i]
-            }
-
-			uiBoxes.push(
-				<UIBox event={e} box={box} ref={el => eventRefs.current[i] = el} />
-			)
-		}
-		return uiBoxes
-	}
-
-    return (
-        <div className="Timeline" key="timeline">
-			<button onClick={step}>
-				Step
-			</button>
-            <div className="Events-container" key="events-container">
-                {initUIBoxes()}
-            </div>
-            <div className="Canvas" key="canvas">
-                {
-                    Array.from(Array(numTicks), (e, i) => {
-                        const style = {top: i * spaceBetweenTicks + "px"};
-                        const offsetDate = new Date(startDate)
-                        const tickDate = new Date(offsetDate.setMonth(offsetDate.getMonth() + (i * interval)))
-                        return <div
-                            key={i}
-                            className="Canvas-tick"
-                            style={style}>
-                                {tickDate.toLocaleDateString('en-us', { year:"numeric", month:"short", day:"numeric"})}
-                            </div> 
-                    })
-                }
-            </div>
-        </div>
-    )
-}
-
 const Box = React.forwardRef((props, ref) => {
 	const { e } = props
 	const box = e.box // convenience
+
 
     let vectors = []
 	box.vectors.map((vector, j) => {
 		const [otherBox, dx, dy] = vector
 		vectors.push(
-			<Vector width={box.width} height={box.height} dx={dx} dy={dy} />
+			<Vector key={j} width={box.width} height={box.height} dx={dx} dy={dy} />
 		)
 	})
 
@@ -480,7 +358,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			</button>
 			<div>
 				{events.map((e, i) => {
-					return <Box e={e} ref={el => eventRefs.current[i] = el} />
+					return <Box e={e} key={i} ref={el => eventRefs.current[i] = el} />
 				})}
 			</div>
 		</div>
