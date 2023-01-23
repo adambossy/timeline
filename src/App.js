@@ -382,7 +382,7 @@ const Box = React.forwardRef((props, ref) => {
 
     let vectors = []
 	event.vectors.map((vector, j) => {
-		const [dx, dy] = vector
+		const [otherBox, dx, dy] = vector
 		vectors.push(
 			<Vector width={event.width} height={event.height} dx={dx} dy={dy} />
 		)
@@ -468,9 +468,8 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 					const dx = centerX(boxB) - centerX(boxA)
 					const dy = centerY(boxB) - centerY(boxA)
 					console.log("dx " + dx + " dy " + dy)
-					boxA.vectors[j] = [dx, dy]
-					boxB.vectors[i] = [-dx, -dy]
-
+					boxA.vectors[j] = [boxB, dx, dy]
+					boxB.vectors[i] = [boxA, -dx, -dy]
 				}
 				return boxB 
 			})
@@ -480,11 +479,14 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 
 	const applyVectors = () => {
 		events.map((event, i) => {
-			event.vectors.map((vector, i) => {
+			event.vectors.map((vector, j) => {
 				// apply only if overlapping
-				const [ dx, dy ] = vector
-				event.x -= dx / 2
-				event.y -= dy / 2
+				const [ otherBox, dx, dy ] = vector
+				// TODO fix up naming inconsistencies
+				if (isOverlapping(event, otherBox)) {
+					event.x -= dx / 2
+					event.y -= dy / 2
+				}
 			})
 		})
 	}
