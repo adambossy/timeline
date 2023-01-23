@@ -424,40 +424,39 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 
 	const computeVectors = () => {
 		events.map((e, i) => {
-			const boxA = e.box // convenience
-			if (!boxA.x) {
-				throw new Error("x is undefined for box " + boxA.name)
+			const box = e.box // convenience
+			if (!box.x) {
+				throw new Error("x is undefined for box " + box.name)
 			}
-			if (!boxA.y) {
-				throw new Error("y is undefined for box " + boxA.name)
+			if (!box.y) {
+				throw new Error("y is undefined for box " + box.name)
 			}
-			if (!boxA.width) {
-				throw new Error("width is undefined for box " + boxA.name)
+			if (!box.width) {
+				throw new Error("width is undefined for box " + box.name)
 			}
-			if (!boxA.height) {
-				throw new Error("height is undefined for box " + boxA.name)
+			if (!box.height) {
+				throw new Error("height is undefined for box " + box.name)
 			}
-			events.map((e2, j) => {
-				const boxB = e2.box // convenience
-				if (isOverlapping(boxA, boxB)) {
+			events.map((otherE, j) => {
+				const otherBox = otherE.box // convenience
+				if (isOverlapping(box, otherBox)) {
 					if (i == j) {
-						return boxB
+						return otherBox
 					}
-					const dx = centerX(boxB) - centerX(boxA)
-					const dy = centerY(boxB) - centerY(boxA)
-					boxA.vectors[j] = [boxB, dx, dy]
-					boxB.vectors[i] = [boxA, -dx, -dy]
+					const dx = centerX(otherBox) - centerX(box)
+					const dy = centerY(otherBox) - centerY(box)
+					box.vectors[j] = [otherBox, dx, dy]
+					otherBox.vectors[i] = [box, -dx, -dy]
 				}
-				return boxB 
+				return otherBox 
 			})
-			return boxA
+			return box
 		})
 	}
 
 	const applyVectors = () => {
 		events.map((e, i) => {
 			e.box.vectors.map((vector, j) => {
-				// apply only if overlapping
 				const [ otherBox, dx, dy ] = vector
 				// TODO fix up naming inconsistencies
 				if (isOverlapping(e.box, otherBox)) {
