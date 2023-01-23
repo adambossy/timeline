@@ -374,19 +374,31 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
     )
 }
 
-const Box = ({ event }) => {
+const Box = React.forwardRef((props, ref) => {
+	const { event } = props
+
 	console.log("rendering Box " + event.name)
 	return (
-		<div className="Canvas-event" style={{ top: event.y, left: event.x }}>
+		<div className="Canvas-event" ref={ref} style={{ top: event.y, left: event.x }}>
 			<div className="Canvas-event-name">{event.name}</div>
 			<div className="Canvas-event-date">{event.date.toString()}</div>
 		</div>
 	)
-}
+})
 
 const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) => {
-
 	const [ events, setEvents ] = useState(eventsData)
+    const eventRefs = useRef([]);
+
+	useEffect(() => {
+		console.log("useEffect")
+		events.map((e, i) => {
+			const ref = eventRefs.current[i]
+			e.width = ref.clientWidth
+			e.height = ref.clientHeight
+		})
+		// step()
+	})
 
 	function step() {
 		console.log("step")
@@ -407,7 +419,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			</button>
 			<div>
 				{events.map((e, i) => {
-					return <Box event={e} />
+					return <Box event={e} ref={el => eventRefs.current[i] = el} />
 				})}
 			</div>
 		</div>
