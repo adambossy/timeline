@@ -193,9 +193,7 @@ class SimpleIterativeTimeline {
 					const dx = boxB.centerX() - boxA.centerX()
 					const dy = boxB.centerY() - boxA.centerY()
 					boxA.vectors[j] = [dx, dy]
-					console.log("boxA.vectors[" + j + "] " + dx + ", " + dy)
 					boxB.vectors[i] = [-dx, -dy]
-					console.log("boxB.vectors[" + i + "] " + dx + ", " + dy)
 
 					boxA.x -= dx
 					boxA.y -= dy
@@ -225,7 +223,6 @@ const Vector = (props) => {
 		marginLeft: length / 2 + "px",
 		width: Math.max(0, length / 2 - 16) + "px" // MAGIC NUMBER ALERT .point border-left-width
 	}
-	console.log("rendering Vector with lineStyle " + JSON.stringify(lineStyle))
 	return (
 		<div className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
 			<div className="line" style={lineStyle}></div>
@@ -252,7 +249,6 @@ const UIBox = React.forwardRef((props, ref) => {
         })
     }
 
-	console.log("rendering UIBox " + event.name)
 	return (
 		<div className="Canvas-event" ref={ref}>
 			<div className="Canvas-event-name">{event.name}</div>
@@ -292,24 +288,6 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 			e.width = ref.clientWidth
 			e.height = ref.clientHeight
 		})
-
-/*
-        // TODO possibly factor into own function; don't need to hold onto startDate, endDate and canvasHeight
-        // Could also project these on a plane from 0 to 1 and then have the timelineUI extrapolate them into real coords (!)
-        const totalDays = this.dayDiff(startDate, endDate)
-        this.boxes = events.map((e, i) => {
-            const x = Math.random() * 200 // 200 is a magic number to provide jitter
-
-            const days = this.dayDiff(startDate, e.date)
-            const y = Math.random() * 600 // (days / totalDays) * canvasHeight
-            
-            return new EventBox(e, x, y, e.width, e.height) 
-        });
-*/
-
-		console.log("init2")
-		// console.log("setTimeline " + timeline)
-		// setTimeline(new SimpleIterativeTimeline(events, startDate, endDate, canvasHeight))
     }
 
     const draw = () => {
@@ -321,9 +299,6 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
                 const style = "left:" + b.x + "px;top:" + b.y + "px"
                 ref.setAttribute('style', style)
             });
-
-			console.log("setTimeline " + timeline)
-            // setTimeline(timeline)
         }
     }
 
@@ -352,7 +327,6 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 		return uiBoxes
 	}
 
-	console.log("rendering timeline")
     return (
         <div className="Timeline" key="timeline">
 			<button onClick={step}>
@@ -392,7 +366,6 @@ const Box = React.forwardRef((props, ref) => {
 		)
 	})
 
-	console.log("rendering Box " + e.name)
 	return (
 		<div className="Canvas-event" ref={ref} style={{ top: box.y, left: box.x }}>
 			<div className="Canvas-event-name">{e.name}</div>
@@ -416,9 +389,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	})
 
 	useEffect(() => {
-		console.log("useEffect")
 		if (!renderedOnce) {
-			console.log("initial render")
 			// This gets called on every render, and it's fine because it's idempotent
 			events.map((e, i) => {
 				const box = e.box // convenience
@@ -452,7 +423,6 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	}
 
 	const computeVectors = () => {
-		// TODO fix up naming (events / boxA&B)
 		events.map((e, i) => {
 			const boxA = e.box // convenience
 			if (!boxA.x) {
@@ -475,7 +445,6 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 					}
 					const dx = centerX(boxB) - centerX(boxA)
 					const dy = centerY(boxB) - centerY(boxA)
-					console.log("dx " + dx + " dy " + dy)
 					boxA.vectors[j] = [boxB, dx, dy]
 					boxB.vectors[i] = [boxA, -dx, -dy]
 				}
@@ -500,14 +469,11 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	}
 
 	const step = () => {
-		console.log("step")
-		// computeVectors()
 		applyVectors()
 		const eventsCopy = [ ...events ]
 		setEvents(eventsCopy)
 	}
 
-	console.log("rendering Timeline")
 	return (
 		<div className="Timeline" key="timeline">
 			<button className="Timeline-step" onClick={step}>
