@@ -209,7 +209,7 @@ class SimpleIterativeTimeline {
 const Vector = (props) => {
 	const {width, height, dx, dy} = props
 	const angle = Math.atan2(dy, dx) * 180 / Math.PI
-	const length = Math.sqrt(dx * dx + dy * dy) / 2
+	const length = Math.sqrt(dx * dx + dy * dy)
 
 	const vectorStyle = {
 		left: ((width - length) / 2) + "px",
@@ -220,9 +220,9 @@ const Vector = (props) => {
 	}
 	const lineStyle = {
 		marginLeft: length / 2 + "px",
-		width: length / 2 - 16 + "px" // MAGIC NUMBER ALERT .point border-left-width
+		width: Math.max(0, length / 2 - 16) + "px" // MAGIC NUMBER ALERT .point border-left-width
 	}
-	console.log("rendering Vector")
+	console.log("rendering Vector with lineStyle " + JSON.stringify(lineStyle))
 	return (
 		<div className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
 			<div className="line" style={lineStyle}></div>
@@ -380,17 +380,27 @@ const TimelineUI = ({ events, startDate, endDate, canvasHeight, interval }) => {
 const Box = React.forwardRef((props, ref) => {
 	const { event } = props
 
+    let vectors = []
+	event.vectors.map((vector, j) => {
+		const [dx, dy] = vector
+		vectors.push(
+			<Vector width={event.width} height={event.height} dx={dx} dy={dy} />
+		)
+	})
+
 	console.log("rendering Box " + event.name)
 	return (
 		<div className="Canvas-event" ref={ref} style={{ top: event.y, left: event.x }}>
 			<div className="Canvas-event-name">{event.name}</div>
 			<div className="Canvas-event-date">{event.date.toString()}</div>
+			{vectors}
 		</div>
 	)
 })
 
 const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) => {
 	const [ events, setEvents ] = useState(eventsData)
+	const [ renderedOnce, setRenderedOnce ] = useState(false)
     const eventRefs = useRef([]);
 
 	events.map((e, i) => {
@@ -402,12 +412,19 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 
 	useEffect(() => {
 		console.log("useEffect")
-		// This gets called on every render, and it's fine because it's idempotent
-		events.map((e, i) => {
-			const ref = eventRefs.current[i]
-			e.width = ref.clientWidth
-			e.height = ref.clientHeight
-		})
+		if (!renderedOnce) {
+			console.log("initial render")
+			// This gets called on every render, and it's fine because it's idempotent
+			events.map((e, i) => {
+				const ref = eventRefs.current[i]
+				e.width = ref.clientWidth
+				e.height = ref.clientHeight
+			})
+			computeVectors()
+			const eventsCopy = [ ...events ]
+			setEvents(eventsCopy)
+			setRenderedOnce(true)
+		}
 	})
 
     const projectionOverlaps = (minA, maxA, minB, maxB) => {
@@ -425,11 +442,10 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	}
 
 	const centerY = (event) => {
-        return event.x + (event.width / 2);
+        return event.y + (event.height / 2);
 	}
 
-	const step = () => {
-		console.log("step")
+	const computeVectors = () => {
 		// TODO fix up naming (events / boxA&B)
 		events.map((boxA, i) => {
 			if (!boxA.x) {
@@ -455,15 +471,28 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 					boxA.vectors[j] = [dx, dy]
 					boxB.vectors[i] = [-dx, -dy]
 
-					boxA.x -= dx
-					boxA.y -= dy
-					boxB.x += dx
-					boxB.y += dy
 				}
 				return boxB 
 			})
 			return boxA
 		})
+	}
+
+	const applyVectors = () => {
+		events.map((event, i) => {
+			event.vectors.map((vector, i) => {
+				// apply only if overlapping
+				const [ dx, dy ] = vector
+				event.x -= dx / 2
+				event.y -= dy / 2
+			})
+		})
+	}
+
+	const step = () => {
+		console.log("step")
+		// computeVectors()
+		applyVectors()
 		const eventsCopy = [ ...events ]
 		setEvents(eventsCopy)
 	}
