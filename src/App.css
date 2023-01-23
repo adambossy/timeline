@@ -46,6 +46,12 @@
     background: #eee;
 }
 
+.Timeline-step {
+	position: absolute;
+	top: -50px;
+	left: -50px;
+}
+
 .Canvas {
     width: 102px;
     height: 1200px;

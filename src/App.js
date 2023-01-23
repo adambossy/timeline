@@ -9,11 +9,14 @@ const state = {
             date: new Date("2016-01-01"), // TEMP - remove
             startDate: "2016-01-07",
             endDate: "2018-11-09",
+			// unflatten these at some point (turn `events` into `boxes` and stuff event data into `event` val)
+			vectors: []
         },
         {
             name: "Mendozada",
             image: "mendozada_2016.png",
             date: new Date("2016-02-01"),
+			vectors: []
         },
         /*
         {
@@ -390,22 +393,76 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	const [ events, setEvents ] = useState(eventsData)
     const eventRefs = useRef([]);
 
+	events.map((e, i) => {
+		if (!e.x) {
+			e.x = Math.random() * 200 + 1
+			e.y = Math.random() * 200 + 1
+		}
+	})
+
 	useEffect(() => {
 		console.log("useEffect")
+		// This gets called on every render, and it's fine because it's idempotent
 		events.map((e, i) => {
 			const ref = eventRefs.current[i]
 			e.width = ref.clientWidth
 			e.height = ref.clientHeight
 		})
-		// step()
 	})
 
-	function step() {
+    const projectionOverlaps = (minA, maxA, minB, maxB) => {
+        return maxA >= minB && maxB >= minA
+    }
+
+    const isOverlapping = (boxA, boxB) => {
+        return projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
+            projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
+    }
+
+	// TODO add this to the event state prototype?
+	const centerX = (event) => {
+        return event.x + (event.width / 2);
+	}
+
+	const centerY = (event) => {
+        return event.x + (event.width / 2);
+	}
+
+	const step = () => {
 		console.log("step")
-		events.map((e, i) => {
-			e.x = Math.random() * 800
-			e.y = Math.random() * 800
-			return e
+		// TODO fix up naming (events / boxA&B)
+		events.map((boxA, i) => {
+			if (!boxA.x) {
+				throw new Error("x is undefined for box " + boxA.name)
+			}
+			if (!boxA.y) {
+				throw new Error("y is undefined for box " + boxA.name)
+			}
+			if (!boxA.width) {
+				throw new Error("width is undefined for box " + boxA.name)
+			}
+			if (!boxA.height) {
+				throw new Error("height is undefined for box " + boxA.name)
+			}
+			events.map((boxB, j) => {
+				if (isOverlapping(boxA, boxB)) {
+					if (i == j) {
+						return boxB
+					}
+					const dx = centerX(boxB) - centerX(boxA)
+					const dy = centerY(boxB) - centerY(boxA)
+					console.log("dx " + dx + " dy " + dy)
+					boxA.vectors[j] = [dx, dy]
+					boxB.vectors[i] = [-dx, -dy]
+
+					boxA.x -= dx
+					boxA.y -= dy
+					boxB.x += dx
+					boxB.y += dy
+				}
+				return boxB 
+			})
+			return boxA
 		})
 		const eventsCopy = [ ...events ]
 		setEvents(eventsCopy)
@@ -414,7 +471,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	console.log("rendering Timeline")
 	return (
 		<div className="Timeline" key="timeline">
-			<button onClick={step}>
+			<button className="Timeline-step" onClick={step}>
 				Step
 			</button>
 			<div>
