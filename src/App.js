@@ -21,28 +21,38 @@ const state = {
 				vectors: []
 			}
         },
-        /*
         {
             name: "Event designed to collide with Camp Grounded",
             image: "foo",
             date: new Date("2016-05-01"),
+			box: {
+				vectors: []
+			}
         },
         {
             name: "Camp Grounded",
             image: "camp_grounded.png",
             date: new Date("2016-05-01"),
+			box: {
+				vectors: []
+			}
         },
         {
             name: "Camp Grounded NYC",
             image: "camp_grounded.png",
             date: new Date("2016-06-01"),
+			box: {
+				vectors: []
+			}
         },
         {
             name: "Hot New Event",
             image: "camp_grounded.png",
             date: new Date("2017-01-01"),
+			box: {
+				vectors: []
+			}
         }
-        */
     ],
 };
 
@@ -50,26 +60,6 @@ function computeTicks(startDate, endDate, interval) {
     const months = monthDiff(startDate, endDate);
     const ticks = months / interval;
     return Math.round(ticks);
-}
-
-class EventBox {
-    constructor(event, x, y, width, height) {
-        this.event = event
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
-        this.isOverlapping = false
-        this.vectors = []
-    }
-
-    centerX = () => {
-        return this.x + (this.width / 2);
-    }
-
-    centerY = () => {
-        return this.y + (this.height / 2);
-    }
 }
 
 // TODO generalize to support both horizontal and vertical
@@ -224,9 +214,9 @@ const Vector = (props) => {
 		width: Math.max(0, length / 2 - 16) + "px" // MAGIC NUMBER ALERT .point border-left-width
 	}
 	return (
-		<div className="arrow" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
-			<div className="line" style={lineStyle}></div>
-			<div className="point"></div>
+		<div className="Vector" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
+			<div className="Vector-stem" style={lineStyle}></div>
+			<div className="Vector-point"></div>
 		</div>
 	)
 }
@@ -245,9 +235,9 @@ const Box = React.forwardRef((props, ref) => {
 	})
 
 	return (
-		<div className="Canvas-event" ref={ref} style={{ top: box.y, left: box.x }}>
-			<div className="Canvas-event-name">{e.name}</div>
-			<div className="Canvas-event-date">{e.date.toString()}</div>
+		<div className="Timeline-event" ref={ref} style={{ top: box.y, left: box.x }}>
+			<div className="Timeline-event-name">{e.name}</div>
+			<div className="Timeline-event-date">{e.date.toString()}</div>
 			{vectors}
 		</div>
 	)
@@ -256,24 +246,34 @@ const Box = React.forwardRef((props, ref) => {
 const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) => {
 	const [ events, setEvents ] = useState(eventsData)
 	const [ renderedOnce, setRenderedOnce ] = useState(false)
-    const eventRefs = useRef([]);
+    const eventRefs = useRef([])
 
-	events.map((e, i) => {
-		const box = e.box // convenience
-		if (!box.x) {
-			box.x = Math.random() * 200 + 1
-			box.y = Math.random() * 200 + 1
-		}
-	})
+    const timelineRef = useRef(null)
+    let width
+    let height
+
+    const dayDiff = (dateFrom, dateTo) => {
+        const diffTime = Math.abs(dateTo - dateFrom);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    }
+
+    const totalDays = (startDate, endDate) => {
+        return dayDiff(startDate, endDate)
+    }
 
 	useEffect(() => {
 		if (!renderedOnce) {
-			// This gets called on every render, and it's fine because it's idempotent
+            width = timelineRef.current.clientWidth
+            height = timelineRef.current.clientHeight
 			events.map((e, i) => {
 				const box = e.box // convenience
 				const ref = eventRefs.current[i]
 				box.width = ref.clientWidth
 				box.height = ref.clientHeight
+			    box.x = (width / 2) + (Math.random() * 200) - 100 - (box.width / 2)
+
+                const days = dayDiff(startDate, e.date)
+                box.y = (days / totalDays(startDate, endDate)) * height
 			})
 			computeVectors()
 			const eventsCopy = [ ...events ]
@@ -356,7 +356,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			<button className="Timeline-step" onClick={step}>
 				Step
 			</button>
-			<div>
+			<div className="Timeline-container" ref={timelineRef}>
 				{events.map((e, i) => {
 					return <Box e={e} key={i} ref={el => eventRefs.current[i] = el} />
 				})}

@@ -38,51 +38,56 @@
 }
 
 .Timeline {
+    width: 100%;
+    height: 100%;
+}
+
+.Timeline-container {
     position: relative;
-    left: 100px;
-    top: 100px;
-    width: 1000px;
+    left: 5%;
+    top: 40px;
+    width: 90%;
     height: 1200px;
-    background: #eee;
+    background: linear-gradient(#000, #000) no-repeat center/2px 100%;
+    border: 1px solid #000;
 }
 
 .Timeline-step {
-	position: absolute;
-	top: -50px;
-	left: -50px;
+	position: fixed;
+	bottom: 10px;
+	left: 10px;
+    border: 1px solid #99f;
+    padding: 10px 30px;
+    z-index: 1;
+    background-color: #99f;
 }
 
-.Canvas {
-    width: 102px;
-    height: 1200px;
-    border-right: solid 4px #ccf;
-}
-
-.Canvas-tick {
+.Timeline-tick {
     position: absolute;
     left: 12px;
     float: left;
 }
 
-.Canvas-event-name {
+.Timeline-event-name {
     font-weight: 700;
 }
 
-.Canvas-event {
+.Timeline-event {
     background-color: #ddd;
     position: absolute;
     float: left;
     width: 200px;
-    background: linear-gradient(#000, #000) no-repeat center/2px 100%;
+    /*background: linear-gradient(#000, #000) no-repeat center/2px 100%;*/
 	border: 1px solid black;
+    padding: 15px;
 }
 
-.Canvas-event:before {
+.Timeline-event:before {
 	content: '';
 	position: absolute;
 	top: 50%;
 	left: 0;
-	border-top: 1px solid black;
+	/*border-top: 1px solid black;*/
 	background: black;
 	width: 100%;
 	transform: translateY(-50%);
@@ -93,14 +98,15 @@
     left: 108px;
 }
 
-.arrow {
+.Vector {
 	width: 920px;
 	position: absolute;
 	top: 0px;
 	left: 0px;
+    display: none;
 }
 
-.line {
+.Vector-stem {
 	margin-top: 4px; /* .point border-top-width + .point border-bottom-width / 2 */
 	margin-left: 460px; /* .arrow width / 2 */
     width: 444px; /* .arrow width / 2 - .point border-left-width */
@@ -109,7 +115,7 @@
 	float: left;
 }
 
-.point {
+.Vector-point {
 	width: 0;
 	height: 0;
 	border-top: 5px solid transparent;
