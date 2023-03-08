@@ -24,11 +24,12 @@ const state = {
         {
             name: "Started school",
             image: "foo",
-            date: new Date("2016-05-01"),
+            date: new Date("2016-04-01"),
 			box: {
 				vectors: []
 			}
         },
+        /*
         {
             name: "Graduated college",
             image: "college.png",
@@ -45,6 +46,7 @@ const state = {
 				vectors: []
 			}
         },
+        */
             ],
 };
 
@@ -108,11 +110,11 @@ const Vector = (props) => {
 const Box = React.forwardRef((props, ref) => {
 	const { e } = props
 	const box = e.box // convenience
+    box.e = e // backref for debugging
 
     let vectors = []
 	box.vectors.forEach((vector, j) => {
-        const dx = vector.dx
-        const dy = vector.dy
+        const [otherBox, dx, dy] = vector
 		vectors.push(
 			<Vector key={j} width={box.width} height={box.height} dx={dx} dy={dy} />
 		)
@@ -224,8 +226,11 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 				const [ otherBox, dx, dy ] = vector
 				// TODO fix up naming inconsistencies
 				if (isOverlapping(e.box, otherBox)) {
+                    console.log("overlap btwn " + e.name + " and " + otherBox.e.name)
 					e.box.x -= dx / 2
 					e.box.y -= dy / 2
+                    // otherBox.x += dx / 2
+                    // otherBox.y += dy / 2
 				}
 			})
 		})
