@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import './App.css';
 
 const state = {
@@ -82,9 +82,14 @@ function App() {
     );
 }
 
+interface VectorProps {
+	width: number;
+	height: number;
+	dx: number;
+	dy: number;
+}
 
-const Vector = (props) => {
-	const {width, height, dx, dy} = props
+const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
 	const angle = Math.atan2(dy, dx) * 180 / Math.PI
 	const length = Math.sqrt(dx * dx + dy * dy)
 
@@ -107,8 +112,22 @@ const Vector = (props) => {
 	)
 }
 
-const Box = React.forwardRef((props, ref) => {
-	//@ts-ignore
+interface BoxProps {
+	e: {
+	  box: {
+		width: number;
+		height: number;
+		vectors: [any, number, number][];
+		x: number;
+		y: number;
+		e: object; // for debugging
+	  };
+	  name: string;
+	  date: Date;
+	};
+  }
+  
+  const Box = forwardRef<HTMLDivElement, BoxProps>((props, ref) => {
 	const { e } = props
 	const box = e.box // convenience
     box.e = e // backref for debugging
@@ -127,7 +146,6 @@ const Box = React.forwardRef((props, ref) => {
     }
 
 	return (
-		//@ts-ignore
 		<div className="Timeline-event" ref={ref} style={{ top: box.y, left: box.x }}>
 			<div className="Timeline-event-name">{e.name}</div>
 			<div className="Timeline-event-date">{formattedDate(e.date)}</div>
@@ -251,7 +269,6 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			</button>
 			<div className="Timeline-container" ref={timelineRef}>
 				{events.map((e, i) => {
-					//@ts-ignore
 					return <Box e={e} key={i} ref={el => eventRefs.current[i] = el} />
 				})}
 			</div>
