@@ -1,28 +1,28 @@
-import React, { Component, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import './App.css';
 
 const state = {
     events: [
         {
-            name: "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum ",
-            image: "patreon_logo.png",
+            name: "Was born",
+            image: "birth.png",
             date: new Date("2016-01-01"), // TEMP - remove
-            startDate: "2016-01-07",
-            endDate: "2018-11-09",
+            // startDate: "2016-01-07",
+            // endDate: "2018-11-09",
 			box: {
 				vectors: []
 			}
         },
         {
-            name: "Mendozada",
-            image: "mendozada_2016.png",
+            name: "First communion",
+            image: "first_communion.png",
             date: new Date("2016-02-01"),
 			box: {
 				vectors: []
 			}
         },
         {
-            name: "Event designed to collide with Camp Grounded",
+            name: "Started school",
             image: "foo",
             date: new Date("2016-05-01"),
 			box: {
@@ -30,97 +30,30 @@ const state = {
 			}
         },
         {
-            name: "Camp Grounded",
-            image: "camp_grounded.png",
+            name: "Graduated college",
+            image: "college.png",
             date: new Date("2016-05-01"),
 			box: {
 				vectors: []
 			}
         },
         {
-            name: "Camp Grounded NYC",
-            image: "camp_grounded.png",
+            name: "Got married",
+            image: "married.png",
             date: new Date("2016-06-01"),
 			box: {
 				vectors: []
 			}
         },
-        {
-            name: "Hot New Event",
-            image: "camp_grounded.png",
-            date: new Date("2017-01-01"),
-			box: {
-				vectors: []
-			}
-        }
-    ],
+            ],
 };
 
-function computeTicks(startDate, endDate, interval) {
-    const months = monthDiff(startDate, endDate);
-    const ticks = months / interval;
-    return Math.round(ticks);
-}
-
-// TODO generalize to support both horizontal and vertical
-class SimpleVerticalTimeline {
-
-    margin = 10
-
-    projectionOverlaps(minA, maxA, minB, maxB) {
-        return maxA >= minB && maxB >= minA
-    }
-
-    isOverlapping(boxA, boxB) {
-        return this.projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
-            this.projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
-    }
-
-    totalDays(startDate, endDate) {
-        return this.dayDiff(startDate, endDate)
-    }
-
-    dayDiff(dateFrom, dateTo) {
-        const diffTime = Math.abs(dateTo - dateFrom);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    }
-
-    create(eventBoxes, startDate, endDate, canvasHeight) {
-        let lastBox
-        const totalDays = this.totalDays(startDate, endDate)
-        return eventBoxes.map((b, i) => {
-            const days = this.dayDiff(startDate, b.event.date)
-            b.y = (days / totalDays) * canvasHeight
-
-            if (lastBox && 
-                this.projectionOverlaps(
-                    lastBox.y,
-                    lastBox.y + lastBox.height + this.margin,
-                    b.y,
-                    b.y + b.height + this.margin)) {
-                b.x = lastBox.x + lastBox.width + this.margin
-            }
-
-            lastBox = b
-            return b
-        });
-    }
-}
-
-
-function monthDiff(dateFrom, dateTo) {
-    return dateTo.getMonth() - dateFrom.getMonth() +
-   (12 * (dateTo.getFullYear() - dateFrom.getFullYear()))
-}
 
 function App() {
     const startDate = new Date("January 1, 2016");
     const endDate = new Date("December, 2018");
     const interval = 3 // number of months per "tick"
     const canvasHeight = 1500;
-
-    const eventRefs = useRef([]);
-    let eventBoxes;
 
     state.events.sort((a, b) => {
         const dateA = a.date
@@ -133,10 +66,6 @@ function App() {
             return 0
         }
     })
-
-    // HACK
-    const [, updateState] = React.useState();
-    const forceUpdate = React.useCallback(() => updateState({}), []);
 
     return (
         <div className="App">
@@ -151,51 +80,6 @@ function App() {
     );
 }
 
-
-class SimpleIterativeTimeline {
-
-    // TODO pull into utils
-    dayDiff(dateFrom, dateTo) {
-        const diffTime = Math.abs(dateTo - dateFrom);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    }
-
-    constructor(events, startDate, endDate, canvasHeight) {
-    }
-
-    projectionOverlaps(minA, maxA, minB, maxB) {
-        return maxA >= minB && maxB >= minA
-    }
-
-    isOverlapping(boxA, boxB) {
-        return this.projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
-            this.projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
-    }
-
-    step() {
-		this.boxes.map((boxA, i) => {
-			this.boxes.map((boxB, j) => {
-				// Compute vectors
-				if (this.isOverlapping(boxA, boxB)) {
-					if (i == j) {
-						return
-					}
-					const dx = boxB.centerX() - boxA.centerX()
-					const dy = boxB.centerY() - boxA.centerY()
-					boxA.vectors[j] = [dx, dy]
-					boxB.vectors[i] = [-dx, -dy]
-
-					boxA.x -= dx
-					boxA.y -= dy
-					boxB.x += dx
-					boxB.y += dy
-				}
-			})
-
-		})
-    }
-    
-}
 
 const Vector = (props) => {
 	const {width, height, dx, dy} = props
@@ -225,19 +109,24 @@ const Box = React.forwardRef((props, ref) => {
 	const { e } = props
 	const box = e.box // convenience
 
-
     let vectors = []
-	box.vectors.map((vector, j) => {
-		const [otherBox, dx, dy] = vector
+	box.vectors.forEach((vector, j) => {
+        const dx = vector.dx
+        const dy = vector.dy
 		vectors.push(
 			<Vector key={j} width={box.width} height={box.height} dx={dx} dy={dy} />
 		)
 	})
 
+    const formattedDate = (date) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return months[date.getMonth()] + " " + date.getFullYear()
+    }
+
 	return (
 		<div className="Timeline-event" ref={ref} style={{ top: box.y, left: box.x }}>
 			<div className="Timeline-event-name">{e.name}</div>
-			<div className="Timeline-event-date">{e.date.toString()}</div>
+			<div className="Timeline-event-date">{formattedDate(e.date)}</div>
 			{vectors}
 		</div>
 	)
@@ -247,10 +136,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	const [ events, setEvents ] = useState(eventsData)
 	const [ renderedOnce, setRenderedOnce ] = useState(false)
     const eventRefs = useRef([])
-
     const timelineRef = useRef(null)
-    let width
-    let height
 
     const dayDiff = (dateFrom, dateTo) => {
         const diffTime = Math.abs(dateTo - dateFrom);
@@ -263,9 +149,9 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 
 	useEffect(() => {
 		if (!renderedOnce) {
-            width = timelineRef.current.clientWidth
-            height = timelineRef.current.clientHeight
-			events.map((e, i) => {
+            let width = timelineRef.current.clientWidth
+            let height = timelineRef.current.clientHeight
+			events.forEach((e, i) => {
 				const box = e.box // convenience
 				const ref = eventRefs.current[i]
 				box.width = ref.clientWidth
@@ -318,7 +204,7 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 			events.map((otherE, j) => {
 				const otherBox = otherE.box // convenience
 				if (isOverlapping(box, otherBox)) {
-					if (i == j) {
+					if (i === j) {
 						return otherBox
 					}
 					const dx = centerX(otherBox) - centerX(box)
@@ -333,8 +219,8 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
 	}
 
 	const applyVectors = () => {
-		events.map((e, i) => {
-			e.box.vectors.map((vector, j) => {
+		events.forEach((e, i) => {
+			e.box.vectors.forEach((vector, j) => {
 				const [ otherBox, dx, dy ] = vector
 				// TODO fix up naming inconsistencies
 				if (isOverlapping(e.box, otherBox)) {
