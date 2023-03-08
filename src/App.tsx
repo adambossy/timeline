@@ -1,7 +1,44 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import './App.css';
 
-const state = {
+interface VectorProps {
+    width: number;
+    height: number;
+    dx: number;
+    dy: number;
+}
+
+type VectorType = [
+    otherBox: BoxType,
+    dx: number,
+    dy: number
+]
+
+interface BoxType {
+    width?: number | null;
+    height?: number | null;
+    vectors: VectorType[] | null;
+    x?: number | null;
+    y?: number | null;
+    e?: Event | null; // for debugging
+}
+
+interface Event {
+    name: string;
+    image: string;
+    date: Date;
+    box: BoxType;
+}
+
+interface BoxProps {
+    e: Event
+}
+
+interface State {
+    events: Event[];
+}
+
+const state: State = {
     events: [
         {
             name: "Was born",
@@ -54,8 +91,6 @@ const state = {
 function App() {
     const startDate = new Date("January 1, 2016");
     const endDate = new Date("December, 2018");
-    const interval = 3 // number of months per "tick"
-    const canvasHeight = 1500;
 
     state.events.sort((a, b) => {
         const dateA = a.date
@@ -75,18 +110,9 @@ function App() {
                 eventsData={state.events}
                 startDate={startDate}
                 endDate={endDate}
-                canvasHeight={canvasHeight}
-                interval={interval}
             />
         </div>
     );
-}
-
-interface VectorProps {
-    width: number;
-    height: number;
-    dx: number;
-    dy: number;
 }
 
 const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
@@ -112,27 +138,12 @@ const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
     )
 }
 
-interface BoxProps {
-    e: {
-        box: {
-            width: number;
-            height: number;
-            vectors: [any, number, number][];
-            x: number;
-            y: number;
-            e: object; // for debugging
-        };
-        name: string;
-        date: Date;
-    };
-}
-
 const Box = forwardRef<HTMLDivElement, BoxProps>((props, ref) => {
     const { e } = props
     const box = e.box // convenience
     box.e = e // backref for debugging
 
-    let vectors = []
+    let vectors: JSX.Element[] = [] 
     box.vectors.forEach((vector, j) => {
         const [otherBox, dx, dy] = vector
         vectors.push(
@@ -140,32 +151,44 @@ const Box = forwardRef<HTMLDivElement, BoxProps>((props, ref) => {
         )
     })
 
-    const formattedDate = (date) => {
+    const formattedDate = (date: Date) => {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         return `${months[date.getMonth()]} ${date.getFullYear()}`
     }
 
     return (
         <div className="Timeline-event" ref={ref} style={{ top: box.y, left: box.x }}>
-            <div className="Timeline-event-name">{e.name}</div>
-            <div className="Timeline-event-date">{formattedDate(e.date)}</div>
-            {vectors}
+            <>
+                <div className="Timeline-event-name">{e.name}</div>
+                <div className="Timeline-event-date">{formattedDate(e.date)}</div>
+                {vectors}
+            </>
         </div>
     )
 })
 
-const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) => {
+interface TimelineProps {
+    eventsData: Event[];
+    startDate: Date;
+    endDate: Date;
+}
+
+const Timeline: React.FC<TimelineProps> = ({
+    eventsData,
+    startDate,
+    endDate,
+  }) => {
     const [events, setEvents] = useState(eventsData)
     const [renderedOnce, setRenderedOnce] = useState(false)
     const eventRefs = useRef([])
     const timelineRef = useRef(null)
 
-    const dayDiff = (dateFrom, dateTo) => {
-        const diffTime = Math.abs(dateTo - dateFrom);
+    const dayDiff = (dateFrom: Date, dateTo: Date) => {
+        const diffTime: number = Math.abs(dateTo.getTime() - dateFrom.getTime());
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    const totalDays = (startDate, endDate) => {
+    const totalDays = (startDate: Date, endDate: Date) => {
         return dayDiff(startDate, endDate)
     }
 
@@ -190,38 +213,38 @@ const Timeline = ({ eventsData, startDate, endDate, canvasHeight, interval }) =>
         }
     })
 
-    const projectionOverlaps = (minA, maxA, minB, maxB) => {
+    const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
         return maxA >= minB && maxB >= minA
     }
 
-    const isOverlapping = (boxA, boxB) => {
+    const isOverlapping = (boxA: BoxType, boxB: BoxType) => {
         return projectionOverlaps(boxA.x, boxA.x + boxA.width, boxB.x, boxB.x + boxB.width) &&
             projectionOverlaps(boxA.y, boxA.y + boxA.height, boxB.y, boxB.y + boxB.height)
     }
 
     // TODO add this to the event state prototype?
-    const centerX = (event) => {
-        return event.x + (event.width / 2);
+    const centerX = (box: BoxType) => {
+        return box.x + (box.width / 2);
     }
 
-    const centerY = (event) => {
-        return event.y + (event.height / 2);
+    const centerY = (box: BoxType) => {
+        return box.y + (box.height / 2);
     }
 
     const computeVectors = () => {
         events.map((e, i) => {
             const box = e.box // convenience
             if (!box.x) {
-                throw new Error("x is undefined for box " + box.name)
+                throw new Error("x is undefined for box " + e.name)
             }
             if (!box.y) {
-                throw new Error("y is undefined for box " + box.name)
+                throw new Error("y is undefined for box " + e.name)
             }
             if (!box.width) {
-                throw new Error("width is undefined for box " + box.name)
+                throw new Error("width is undefined for box " + e.name)
             }
             if (!box.height) {
-                throw new Error("height is undefined for box " + box.name)
+                throw new Error("height is undefined for box " + e.name)
             }
             events.map((otherE, j) => {
                 const otherBox = otherE.box // convenience
