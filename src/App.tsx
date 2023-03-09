@@ -15,12 +15,12 @@ type VectorType = [
 ]
 
 interface BoxType {
-    width?: number | null;
-    height?: number | null;
-    vectors: VectorType[] | null;
-    x?: number | null;
-    y?: number | null;
-    e?: Event | null; // for debugging
+    width: number;
+    height: number;
+    vectors: VectorType[];
+    x: number;
+    y: number;
+    e?: Event; // for debugging
 }
 
 interface Event {
@@ -47,6 +47,10 @@ const state: State = {
             // startDate: "2016-01-07",
             // endDate: "2018-11-09",
             box: {
+                width: -1,
+                height: -1,
+                x: -1,
+                y: -1,
                 vectors: []
             }
         },
@@ -55,6 +59,10 @@ const state: State = {
             image: "first_communion.png",
             date: new Date("2016-02-01"),
             box: {
+                width: -1,
+                height: -1,
+                x: -1,
+                y: -1,
                 vectors: []
             }
         },
@@ -63,6 +71,10 @@ const state: State = {
             image: "foo",
             date: new Date("2016-04-01"),
             box: {
+                width: -1,
+                height: -1,
+                x: -1,
+                y: -1,
                 vectors: []
             }
         },
@@ -180,8 +192,8 @@ const Timeline: React.FC<TimelineProps> = ({
   }) => {
     const [events, setEvents] = useState(eventsData)
     const [renderedOnce, setRenderedOnce] = useState(false)
-    const eventRefs = useRef([])
-    const timelineRef = useRef(null)
+    const eventRefs = useRef<HTMLDivElement[]>([])
+    const timelineRef = useRef<HTMLDivElement>(null)
 
     const dayDiff = (dateFrom: Date, dateTo: Date) => {
         const diffTime: number = Math.abs(dateTo.getTime() - dateFrom.getTime());
@@ -193,7 +205,7 @@ const Timeline: React.FC<TimelineProps> = ({
     }
 
     useEffect(() => {
-        if (!renderedOnce) {
+        if (!renderedOnce && timelineRef.current) {
             let width = timelineRef.current.clientWidth
             let height = timelineRef.current.clientHeight
             events.forEach((e, i) => {
@@ -269,7 +281,7 @@ const Timeline: React.FC<TimelineProps> = ({
                 const [otherBox, dx, dy] = vector
                 // TODO fix up naming inconsistencies
                 if (isOverlapping(e.box, otherBox)) {
-                    console.log("overlap btwn " + e.name + " and " + otherBox.e.name)
+                    console.log("overlap btwn " + e.name + " and " + otherBox.e!.name)
                     e.box.x -= dx / 2
                     e.box.y -= dy / 2
                     // otherBox.x += dx / 2
@@ -292,7 +304,17 @@ const Timeline: React.FC<TimelineProps> = ({
             </button>
             <div className="Timeline-container" ref={timelineRef}>
                 {events.map((e, i) => {
-                    return <Box e={e} key={i} ref={el => eventRefs.current[i] = el} />
+                    return (
+                        <Box
+                            e={e}
+                            key={i}
+                            ref={(el) => {
+                                if (el) {
+                                    eventRefs.current[i] = el;
+                                }
+                            }}
+                        />
+                    )
                 })}
             </div>
         </div>
