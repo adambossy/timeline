@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import AppV1 from './AppV1';
 import reportWebVitals from './reportWebVitals';
 
 import {
@@ -16,7 +16,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/",
-        element: <App />,
+        element: <AppV1 />,
     }
 ])
 

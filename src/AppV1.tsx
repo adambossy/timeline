@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
-import './App.css';
+import './AppV1.css';
 
 interface VectorProps {
     width: number;
@@ -100,7 +100,7 @@ const state: State = {
 };
 
 
-function App() {
+function AppV1() {
     const startDate = new Date("January 1, 2016");
     const endDate = new Date("December, 2018");
 
@@ -321,4 +321,4 @@ const Timeline: React.FC<TimelineProps> = ({
     )
 }
 
-export default App;
+export default AppV1;
