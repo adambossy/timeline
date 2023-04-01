@@ -50,12 +50,25 @@ const ForkLine: React.FC<ForkLineProps> = ({ angle }) => {
     )
 }
 
+const EVENT_WIDTH = 35; // includes margin
+
+interface BranchProps {
+    numChildren: number;
+}
+
+const Branch: React.FC<BranchProps> = ({ numChildren }) => {
+    const width = numChildren * (17 + 8 + 4); // margin + half eventRange width + gap
+    return (
+        <div className="event-group-branch" style={{ width: `${width}px` }}>&nbsp;</div>
+    ) 
+}
+
 function AppV2() {
     return (
         <div className="timeline">
             <TimelineStem height={20} />
             <div className="event-group">
-                <Fork />
+                <Branch numChildren={2} />
                 <div className="event-sequence-container">
                     <div className="event-sequence">
                         <TimelineStem height={20} />

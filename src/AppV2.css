@@ -59,6 +59,12 @@ body {
     height: 4px;
 }
 
+.event-group-branch {
+    height: 4px;
+    background-color: white;
+    margin: 0 auto;
+}
+
 .event-sequence-container {
     display: flex;
     flex-direction: row;
@@ -71,7 +77,6 @@ body {
     width: 16px;
     position: relative;
     margin: 0 17px;
-    padding-top: 25px;
 }
 
 .event-sequence::before {
