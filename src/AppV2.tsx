@@ -50,14 +50,17 @@ const ForkLine: React.FC<ForkLineProps> = ({ angle }) => {
     )
 }
 
-const EVENT_WIDTH = 35; // includes margin
+const EVENT_WIDTH = 16; // includes border
+const EVENT_MARGIN = 17; // includes margin
 
 interface BranchProps {
-    numChildren: number;
+    leftChildren: number;
+    rightChildren: number;
+    widthOverride?: number;
 }
 
-const Branch: React.FC<BranchProps> = ({ numChildren }) => {
-    const width = numChildren * (17 + 8 + 4); // margin + half eventRange width + gap
+const Branch: React.FC<BranchProps> = ({ leftChildren, rightChildren, widthOverride }) => {
+    const width = widthOverride || (leftChildren + rightChildren) * (EVENT_MARGIN + (EVENT_WIDTH / 2) + 4); // margin + half eventRange width + gap
     return (
         <div className="event-group-branch" style={{ width: `${width}px` }}>&nbsp;</div>
     ) 
@@ -67,14 +70,34 @@ function AppV2() {
     return (
         <div className="timeline">
             <TimelineStem height={20} />
-            <div className="event-group">
-                <Branch numChildren={2} />
-                <div className="event-sequence-container">
-                    <div className="event-sequence">
+            <div className="event-group tracks-3">
+                <Branch leftChildren={2} rightChildren={1} widthOverride={102} />
+                <div className="event-sequence-container" style={{ left: "-22px" }}>
+                    <div className="event-sequence tracks-2">
                         <TimelineStem height={20} />
-                        <EventRange height={200} />
-                        <TimelineStem height={50} />
-                        <EventRange height={300} />
+                        <EventRange height={80} />
+                        <TimelineStem height={40} />
+                        <div className="event-group">
+                            <Branch leftChildren={1} rightChildren={1} />
+                            <div className="event-sequence-container">
+                                <div className="event-sequence">
+                                    <TimelineStem height={20} />
+                                    <EventRange height={100} />
+                                    <TimelineStem height={50} />
+                                    <EventRange height={100} />
+                                    <TimelineStem height={50} />
+                                </div>
+                                <div className="event-sequence">
+                                    <TimelineStem height={40} />
+                                    <EventInstance />
+                                    <TimelineStem height={30} />
+                                    <EventInstance />
+                                    <TimelineStem height={30} />
+                                    <EventRange height={75} />
+                                    <TimelineStem height={100} />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div className="event-sequence">
                         <TimelineStem height={20} />
