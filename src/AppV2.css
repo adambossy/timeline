@@ -1,5 +1,5 @@
 body {
-    background-color: grey; 
+    background-color: darkgray;
 }
 
 .timeline {
@@ -84,7 +84,7 @@ body {
     width: 104px;
 }
 
-.event-sequence::before {
+.event-sequence:before {
     content: '';
     position: absolute;
     top: 0;
@@ -149,6 +149,26 @@ body {
     border: 4px solid white;
     background-color: rgb(33, 150, 243);
     position: relative;
+}
+
+.event-range,
+.event-instance {
+    margin: 1em auto;
+}
+
+.event-instance:before {
+    left: 2px;
+    top: calc(100% * -2);
+}
+
+.event-range:before,
+.event-instance:before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    height: calc(100% + 32px);
+    width: 4px;
+    background-color: white;
 }
 
 .event-range-bubble-arrow {

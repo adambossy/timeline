@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import 'react-vertical-timeline-component/style.min.css';
 
 import './AppV2.css';
@@ -79,48 +79,86 @@ const Branch: React.FC<BranchProps> = ({ leftChildren, rightChildren, widthOverr
     ) 
 }
 
+interface TimelineProps {
+    children: ReactNode;
+}
+
+const Timeline: React.FC<TimelineProps> = ({ children }) => {
+    return <div className="timeline">{children}</div>
+}
+
 function AppV2() {
     return (
-        <div className="timeline">
-            <TimelineStem height={20} />
-            <div className="event-group tracks-3">
-                <Branch leftChildren={2} rightChildren={1} widthOverride={102} />
-                <div className="event-sequence-container" style={{ left: "-22px" }}>
-                    <div className="event-sequence tracks-2">
-                        <TimelineStem height={20} />
-                        <EventRange height={80} bubbleSide={BubbleSide.LEFT} />
-                        <TimelineStem height={40} />
-                        <div className="event-group">
-                            <Branch leftChildren={1} rightChildren={1} />
-                            <div className="event-sequence-container">
-                                <div className="event-sequence">
-                                    <TimelineStem height={20} />
-                                    <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                                    <TimelineStem height={50} />
-                                    <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                                    <TimelineStem height={50} />
-                                </div>
-                                <div className="event-sequence">
-                                    <TimelineStem height={40} />
-                                    <EventInstance />
-                                    <TimelineStem height={30} />
-                                    <EventInstance />
-                                    <TimelineStem height={30} />
-                                    <EventRange height={75} bubbleSide={BubbleSide.LEFT} />
-                                    <TimelineStem height={100} />
+        <React.Fragment>
+            <Timeline>
+                <EventInstance />
+            </Timeline>
+            <hr/>
+            <Timeline>
+                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+            </Timeline>
+            <hr/>
+            <Timeline>
+                <EventInstance />
+                <EventInstance />
+            </Timeline>
+            <hr/>
+            <Timeline>
+                <EventInstance />
+                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+            </Timeline>
+            <hr/>
+            <Timeline>
+                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+                <EventInstance />
+            </Timeline>
+            <hr/>
+            <Timeline>
+                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+            </Timeline>
+            <hr/>
+            <div className="timeline">
+                <TimelineStem height={20} />
+                <div className="event-group tracks-3">
+                    <Branch leftChildren={2} rightChildren={1} widthOverride={102} />
+                    <div className="event-sequence-container" style={{ left: "-22px" }}>
+                        <div className="event-sequence tracks-2">
+                            <TimelineStem height={20} />
+                            <EventRange height={80} bubbleSide={BubbleSide.LEFT} />
+                            <TimelineStem height={40} />
+                            <div className="event-group">
+                                <Branch leftChildren={1} rightChildren={1} />
+                                <div className="event-sequence-container">
+                                    <div className="event-sequence">
+                                        <TimelineStem height={20} />
+                                        <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+                                        <TimelineStem height={50} />
+                                        <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
+                                        <TimelineStem height={50} />
+                                    </div>
+                                    <div className="event-sequence">
+                                        <TimelineStem height={40} />
+                                        <EventInstance />
+                                        <TimelineStem height={30} />
+                                        <EventInstance />
+                                        <TimelineStem height={30} />
+                                        <EventRange height={75} bubbleSide={BubbleSide.LEFT} />
+                                        <TimelineStem height={100} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="event-sequence">
-                        <TimelineStem height={20} />
-                        <EventRange height={400} bubbleSide={BubbleSide.RIGHT} />
-                        <TimelineStem height={75} />
-                        <EventInstance />
+                        <div className="event-sequence">
+                            <TimelineStem height={20} />
+                            <EventRange height={400} bubbleSide={BubbleSide.RIGHT} />
+                            <TimelineStem height={75} />
+                            <EventInstance />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </React.Fragment>
     )
 }
 
