@@ -29,18 +29,33 @@ const TimelineStem: React.FC<StemProps> = ({ height }) => {
     return <div className="timeline-stem" style={{ height: height + "px" }}></div>
 }
 
+const Fork = () => {
+    return (
+        <div className="event-group-fork">
+            <ForkLine angle={45} />
+            <ForkLine angle={135} />
+        </div>
+    )
+}
+
+interface ForkLineProps {
+    angle: number;
+}
+
+const ForkLine: React.FC<ForkLineProps> = ({ angle }) => {
+    return (
+        <div className="event-group-fork-line-container" style={{ transform: `rotate(${angle}deg)` }}>
+            <div className="event-group-fork-line"></div>
+        </div>
+    )
+}
+
 function AppV2() {
     return (
         <div className="timeline">
+            <TimelineStem height={20} />
             <div className="event-group">
-                <div className="event-group-fork">
-                    <div className="event-group-fork-line-container" style={{ transform: "rotate(45deg)"}}>
-                        <div className="event-group-fork-line"></div>
-                    </div>
-                    <div className="event-group-fork-line-container" style={{ transform: "rotate(135deg)"}}>
-                        <div className="event-group-fork-line"></div>
-                    </div>
-                </div>
+                <Fork />
                 <div className="event-sequence-container">
                     <div className="event-sequence">
                         <TimelineStem height={20} />
