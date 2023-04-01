@@ -106,6 +106,40 @@ body {
     */
     position: relative;
     margin: 0 auto;
+    display: grid;
+    place-items: center;
+}
+
+.event-range-bubble {
+    border: 4px solid #336699;
+    background-color: #6699cccc;
+    border-radius: 15px;
+    color: white;
+    width: 150px;
+    padding: .5em .75em;
+    top: 0;
+}
+
+.event-range-bubble.left {
+    margin-left: -260px;
+}
+
+.event-range-bubble.right {
+    margin-left: 40px;
+}
+
+.event-range-bubble h1 {
+    font-size: 0.75em;
+    line-height: 1;
+}
+
+.event-range-bubble h2 {
+    font-size: 0.5em;
+    line-height: 1;
+}
+
+.event-range-bubble p {
+    font-size: 0.25em;
 }
 
 .event-instance {
@@ -115,4 +149,23 @@ body {
     border: 4px solid white;
     background-color: rgb(33, 150, 243);
     position: relative;
+}
+
+.event-range-bubble-arrow {
+    border: 7px solid transparent;
+    top: 22px;
+    content: '';
+    position: relative;
+    height: 0;
+    width: 0;
+}
+
+.left .event-range-bubble-arrow {
+    left: 166px;
+    border-left: 7px solid #336699;
+}
+
+.right .event-range-bubble-arrow {
+    left: -29px;
+    border-right: 7px solid #336699;
 }

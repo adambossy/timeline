@@ -1,17 +1,30 @@
 import React from 'react';
-import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
-import WorkIcon from '@material-ui/icons/Work';
 
 import './AppV2.css';
 
-interface EventRangeProps {
-    height: number;
+enum BubbleSide {
+    RIGHT = 'right',
+    LEFT = 'left',
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ height }) => {
+interface EventRangeProps {
+    height: number;
+    bubbleSide: BubbleSide;
+}
+
+const EventRange: React.FC<EventRangeProps> = ({ height, bubbleSide }) => {
+    const classNames = `event-range-bubble ${bubbleSide}`
     return (
-        <div className="event-range" style={{ height: height + "px" }}></div>
+        <React.Fragment>
+            <div className="event-range" style={{ height: height + "px" }}>
+                <div className={classNames}>
+                    <div className="event-range-bubble-arrow"></div>
+                    <p>2011 - present</p>
+                    <h1>Creative Director</h1>
+                </div>
+            </div>
+        </React.Fragment>
     )
 }
 
@@ -75,16 +88,16 @@ function AppV2() {
                 <div className="event-sequence-container" style={{ left: "-22px" }}>
                     <div className="event-sequence tracks-2">
                         <TimelineStem height={20} />
-                        <EventRange height={80} />
+                        <EventRange height={80} bubbleSide={BubbleSide.LEFT} />
                         <TimelineStem height={40} />
                         <div className="event-group">
                             <Branch leftChildren={1} rightChildren={1} />
                             <div className="event-sequence-container">
                                 <div className="event-sequence">
                                     <TimelineStem height={20} />
-                                    <EventRange height={100} />
+                                    <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
                                     <TimelineStem height={50} />
-                                    <EventRange height={100} />
+                                    <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
                                     <TimelineStem height={50} />
                                 </div>
                                 <div className="event-sequence">
@@ -93,7 +106,7 @@ function AppV2() {
                                     <TimelineStem height={30} />
                                     <EventInstance />
                                     <TimelineStem height={30} />
-                                    <EventRange height={75} />
+                                    <EventRange height={75} bubbleSide={BubbleSide.LEFT} />
                                     <TimelineStem height={100} />
                                 </div>
                             </div>
@@ -101,7 +114,7 @@ function AppV2() {
                     </div>
                     <div className="event-sequence">
                         <TimelineStem height={20} />
-                        <EventRange height={400} />
+                        <EventRange height={400} bubbleSide={BubbleSide.RIGHT} />
                         <TimelineStem height={75} />
                         <EventInstance />
                     </div>
