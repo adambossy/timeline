@@ -35,7 +35,6 @@ body {
     display: flex;
     flex-direction: column;
     flex-basis: auto;
-    height: 400px;
 }
 
 .event-group-fork {
@@ -158,7 +157,7 @@ body {
 
 .event-instance:before {
     left: 2px;
-    top: calc(100% * -2);
+    top: calc((100% * -2) - 4px);
 }
 
 .event-range:before,
@@ -166,7 +165,7 @@ body {
     content: '';
     position: absolute;
     z-index: -1;
-    height: calc(100% + 32px);
+    height: calc(100% + 40px);
     width: 4px;
     background-color: white;
 }
