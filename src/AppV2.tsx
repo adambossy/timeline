@@ -110,20 +110,42 @@ const collidingInstanceAndRange: Event[] = [
     },
 ]
 
-const collidingInstanceAndRangeGraph: Event[][] = [
+const range1: Event = {
+    title: "Sheep groomer",
+    startDate: new Date("2010-01-01"),
+    endDate: new Date("2010-03-01"),
+}
+
+const group2: EventGroup = [
     [
-        {
-            title: "Sheep groomer",
-            startDate: new Date("2010-01-01"),
-            endDate: new Date("2010-03-01"),
-        },
+        event1,
     ],
     [
-        {
-            title: "Mantle sweeper",
-            date: new Date("2010-02-01"),
-        },
+        range1,
     ]
+]
+
+const collidingInstanceAndRangeGraph: EventGraph = [
+    event1,
+    group2,
+]
+
+const group3: EventGroup = [
+    [
+        range1,
+    ],
+    [
+        event1,
+    ]
+]
+
+const collidingInstanceAndRangeFlippedGraph: EventGraph = [
+    group3,
+]
+
+const danglingEventGraph: EventGraph = [
+    group1,
+    event1
 ]
 
 /*
@@ -355,9 +377,16 @@ function AppV2() {
             <Timeline graph={miniPyramidGraph}>
             </Timeline>
             <hr/>
-            {/*
             <Timeline graph={collidingInstanceAndRangeGraph}>
             </Timeline>
+            <hr/>
+            <Timeline graph={collidingInstanceAndRangeFlippedGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={danglingEventGraph}>
+            </Timeline>
+            <hr/>
+            {/*
             <Timeline events={singleInstance}>
                 <EventInstance />
             </Timeline>
