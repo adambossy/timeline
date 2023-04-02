@@ -293,7 +293,7 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
 
     return (
         <div className="event-group">
-            <Branch leftChildren={1} rightChildren={1} />
+            <div className="event-group-stem"></div>
             <div className="event-sequence-container">
             {
                 sequences.map((sequence, i) => {
@@ -311,55 +311,9 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
                 })
             }
             </div>
-        </div>
-    )
-}
-
-interface StemProps {
-    height: number;
-}
-
-const TimelineStem: React.FC<StemProps> = ({ height }) => {
-    return <div className="timeline-stem" style={{ height: height + "px" }}></div>
-}
-
-const Fork = () => {
-    return (
-        <div className="event-group-fork">
-            <ForkLine angle={45} />
-            <ForkLine angle={135} />
-        </div>
-    )
-}
-
-interface ForkLineProps {
-    angle: number;
-}
-
-const ForkLine: React.FC<ForkLineProps> = ({ angle }) => {
-    return (
-        <div className="event-group-fork-line-container" style={{ transform: `rotate(${angle}deg)` }}>
-            <div className="event-group-fork-line"></div>
-        </div>
-    )
-}
-
-const EVENT_WIDTH = 16; // includes border
-const EVENT_MARGIN = 17; // includes margin
-
-interface BranchProps {
-    leftChildren: number;
-    rightChildren: number;
-    widthOverride?: number;
-}
-
-const Branch: React.FC<BranchProps> = ({ leftChildren, rightChildren, widthOverride }) => {
-    const width = widthOverride || (leftChildren + rightChildren) * (EVENT_MARGIN + (EVENT_WIDTH / 2) + 2); // margin + half eventRange width + gap
-    return (
-        <React.Fragment>
             <div className="event-group-stem"></div>
-        </React.Fragment>
-    ) 
+        </div>
+    )
 }
 
 interface TimelineProps {
@@ -394,26 +348,47 @@ const buildGraph = (sortedEvents: Event[]) => {
 
 // type EventGroup = (Event | Event[])[];
 
+interface EventTrackProps {
+    children: ReactNode;
+}
+
+// TODO Rename EventTrack -> EventSequence and EventSequence -> EventColumnContainer or something like that
+// Also, a group is a collection of tracks - I wonder if I can be more explicit about that
+const EventTrack: React.FC<EventTrackProps> = ({ children }) => {
+    return <div className="event-track">{children}</div>
+}
+
 const constructGraph = (graph: EventGraph): JSX.Element[] => {
     let nodes: JSX.Element[] = []
+    let track: JSX.Element[] = []
     for (let i = 0; i < graph.length; i++) {
         const eventOrGroup = graph[i];
 
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
             if (event.startDate) {
-                nodes.push(<EventRange height={100} bubbleSide={BubbleSide.LEFT} />)
+                track.push(<EventRange height={100} bubbleSide={BubbleSide.LEFT} />)
             } else if (event.date) {
-                nodes.push(<EventInstance />)
+                track.push(<EventInstance />)
             }
         }
 
         if (Array.isArray(eventOrGroup)) {
+            // End track if group is found
+            // TODO consider baking this into the data structure
+            if (track.length > 0) { 
+                nodes.push(<EventTrack>{track}</EventTrack>)
+                track = []
+            }
             const group = eventOrGroup as EventGroup
             if (group) {
                 nodes.push(<EventGroupComponent group={group} />);
             }
         }
+    }
+
+    if (track.length > 0) { 
+        nodes.push(<EventTrack>{track}</EventTrack>)
     }
 
     return nodes;
@@ -440,7 +415,11 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph, children }) => {
         graph = sortedEvents
     }
 
-    return <div className="timeline">{graph && constructGraph(graph)}</div>
+    return (
+        <div className="timeline">
+            {graph && constructGraph(graph)}
+        </div>
+    )
 }
 
 function AppV2() {
