@@ -87,6 +87,9 @@ body {
     position: relative;
 
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 4px;
 }
 
 .event-sequence.tracks-2 {
@@ -97,10 +100,20 @@ body {
     content: '';
     position: absolute;
     top: 0;
-    left: 6px;
-    height: 100%;
-    width: 4px;
-    background: var(--line-color);
+    height: 4px;
+    background-color: white;
+    left: 0;
+    width: 100%;
+}
+
+.event-sequence:first-child:before {
+    left: calc(50% - 2px);
+    width: calc(50% + 2px);
+}
+
+.event-sequence:last-child:before {
+    left: 0;
+    width: calc(50% + 2px);
 }
 
 .event-range {

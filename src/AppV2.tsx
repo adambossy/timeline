@@ -167,6 +167,28 @@ const miniPyramidWeightedLeftGraph: EventGraph = [
     group2a,
 ]
 
+const group2b: EventGroup = [
+    [
+        range1,
+    ],
+    [
+        event1,
+        [
+            [
+                event1,
+            ],
+            [
+                range1,
+            ]
+        ]
+    ]
+]
+
+const miniPyramidWeightedRightGraph: EventGraph = [
+    event1,
+    group2b,
+]
+
 const group3: EventGroup = [
     [
         range1,
@@ -183,6 +205,20 @@ const collidingInstanceAndRangeFlippedGraph: EventGraph = [
 const danglingEventGraph: EventGraph = [
     group1,
     event1
+]
+
+const threeColumnsGraph: EventGraph = [
+    [
+        [
+            event1
+        ],
+        [
+            event2,
+        ],
+        [
+            range1,
+        ]
+    ]
 ]
 
 /*
@@ -246,12 +282,12 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
         sequenceRefs.current.forEach((ref, i) => {
             console.log(`ref ${ref} width ${ref.clientWidth}`)
             widths.push(ref.clientWidth)
-            const widthsCopy = [...widths]
         })
     });
 
     let sequences = []; // aka "tracks" aka "columns"
     for (let i = 0; i < group.length; i++) {
+        console.log(`group[${i}] ${JSON.stringify(group[i])}`);
         sequences.push(constructGraph(group[i]));
     }    
 
@@ -261,7 +297,6 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
             <div className="event-sequence-container">
             {
                 sequences.map((sequence, i) => {
-                    console.log(`sequence width ${sequence}`);
                     return (
                         <div
                             className="event-sequence"
@@ -323,7 +358,6 @@ const Branch: React.FC<BranchProps> = ({ leftChildren, rightChildren, widthOverr
     return (
         <React.Fragment>
             <div className="event-group-stem"></div>
-            <div className="event-group-branch" style={{ width: `${width}px` }}></div>
         </React.Fragment>
     ) 
 }
@@ -439,6 +473,12 @@ function AppV2() {
             <Timeline graph={miniPyramidWeightedLeftGraph}>
             </Timeline>
             <hr/>
+            <Timeline graph={miniPyramidWeightedRightGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={threeColumnsGraph}>
+            </Timeline>
+            <hr/>
             {/*
             <Timeline events={singleInstance}>
                 <EventInstance />
@@ -478,46 +518,6 @@ function AppV2() {
                 <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
                 <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
             </Timeline>
-            <div className="timeline">
-                <TimelineStem height={20} />
-                <div className="event-group tracks-3">
-                    <Branch leftChildren={2} rightChildren={1} widthOverride={102} />
-                    <div className="event-sequence-container" style={{ left: "-22px" }}>
-                        <div className="event-sequence tracks-2">
-                            <TimelineStem height={20} />
-                            <EventRange height={80} bubbleSide={BubbleSide.LEFT} />
-                            <TimelineStem height={40} />
-                            <div className="event-group">
-                                <Branch leftChildren={1} rightChildren={1} />
-                                <div className="event-sequence-container">
-                                    <div className="event-sequence">
-                                        <TimelineStem height={20} />
-                                        <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                                        <TimelineStem height={50} />
-                                        <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                                        <TimelineStem height={50} />
-                                    </div>
-                                    <div className="event-sequence">
-                                        <TimelineStem height={40} />
-                                        <EventInstance />
-                                        <TimelineStem height={30} />
-                                        <EventInstance />
-                                        <TimelineStem height={30} />
-                                        <EventRange height={75} bubbleSide={BubbleSide.LEFT} />
-                                        <TimelineStem height={100} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="event-sequence">
-                            <TimelineStem height={20} />
-                            <EventRange height={400} bubbleSide={BubbleSide.RIGHT} />
-                            <TimelineStem height={75} />
-                            <EventInstance />
-                        </div>
-                    </div>
-                </div>
-            </div>
             */}
         </React.Fragment>
     )
