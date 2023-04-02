@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useRef, useEffect, useState } from 'react';
 import 'react-vertical-timeline-component/style.min.css';
 
 import './AppV2.css';
@@ -96,6 +96,19 @@ const collidingInstancesGraph: EventGraph = [
 const miniPyramidGraph: EventGraph = [
     event1,
     group1 
+]
+
+const nestedGroup1: EventGroup = [
+    [
+        group1
+    ],
+    [
+        group1,
+    ]
+]
+
+const medPyramidGraph: EventGraph = [
+    nestedGroup1 
 ]
 
 const collidingInstanceAndRange: Event[] = [
@@ -202,6 +215,17 @@ interface EventGroupProps {
 }
 
 const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
+    const sequenceRefs = useRef<HTMLDivElement[]>([])
+    const [widths, setWidths] = useState<number[]>([])
+
+    useEffect(() => {
+        sequenceRefs.current.forEach((ref, i) => {
+            console.log(`ref ${ref} width ${ref.clientWidth}`)
+            widths.push(ref.clientWidth)
+            const widthsCopy = [...widths]
+        })
+    });
+
     let sequences = []; // aka "tracks" aka "columns"
     for (let i = 0; i < group.length; i++) {
         sequences.push(constructGraph(group[i]));
@@ -212,9 +236,16 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
             <Branch leftChildren={1} rightChildren={1} />
             <div className="event-sequence-container">
             {
-                sequences.map((sequence) => {
+                sequences.map((sequence, i) => {
+                    console.log(`sequence width ${sequence}`);
                     return (
-                        <div className="event-sequence">
+                        <div
+                            className="event-sequence"
+                            ref={(el) => {
+                                if (el) {
+                                    sequenceRefs.current[i] = el
+                                }
+                            }}>
                             {sequence}
                         </div>
                     )
@@ -264,9 +295,12 @@ interface BranchProps {
 }
 
 const Branch: React.FC<BranchProps> = ({ leftChildren, rightChildren, widthOverride }) => {
-    const width = widthOverride || (leftChildren + rightChildren) * (EVENT_MARGIN + (EVENT_WIDTH / 2) + 4); // margin + half eventRange width + gap
+    const width = widthOverride || (leftChildren + rightChildren) * (EVENT_MARGIN + (EVENT_WIDTH / 2) + 2); // margin + half eventRange width + gap
     return (
-        <div className="event-group-branch" style={{ width: `${width}px` }}>&nbsp;</div>
+        <React.Fragment>
+            <div className="event-group-stem"></div>
+            <div className="event-group-branch" style={{ width: `${width}px` }}></div>
+        </React.Fragment>
     ) 
 }
 
@@ -307,10 +341,7 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
     for (let i = 0; i < graph.length; i++) {
         const eventOrGroup = graph[i];
 
-        console.log(`event or graph ${JSON.stringify(eventOrGroup)}`);
-
         if (!Array.isArray(eventOrGroup)) {
-            console.log(`event`);
             const event = eventOrGroup as Event
             if (event.startDate) {
                 nodes.push(<EventRange height={100} bubbleSide={BubbleSide.LEFT} />)
@@ -320,19 +351,13 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
         }
 
         if (Array.isArray(eventOrGroup)) {
-            console.log(`graph`);
             const group = eventOrGroup as EventGroup
             if (group) {
-                /*
-                let tracks = [];
-                for (let i = 0; i < group.length; i++) {
-                    tracks.push(constructGraph(group[i]));
-                }
-                */
                 nodes.push(<EventGroupComponent group={group} />);
             }
         }
     }
+
     return nodes;
 }
 
@@ -356,8 +381,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph, children }) => {
         // graph = buildGraph(sortedEvents);
         graph = sortedEvents
     }
-
-    console.log(`building graph... ${JSON.stringify(graph)}`);
 
     return <div className="timeline">{graph && constructGraph(graph)}</div>
 }
@@ -384,6 +407,9 @@ function AppV2() {
             </Timeline>
             <hr/>
             <Timeline graph={danglingEventGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={medPyramidGraph}>
             </Timeline>
             <hr/>
             {/*
@@ -425,8 +451,6 @@ function AppV2() {
                 <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
                 <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
             </Timeline>
-            */}
-            <hr/>
             <div className="timeline">
                 <TimelineStem height={20} />
                 <div className="event-group tracks-3">
@@ -467,6 +491,7 @@ function AppV2() {
                     </div>
                 </div>
             </div>
+            */}
         </React.Fragment>
     )
 }

@@ -31,10 +31,16 @@ body {
 }
 */
 
+:root {
+    --default-timeline-stem: 8px;
+}
+
 .event-group {
     display: flex;
     flex-direction: column;
     flex-basis: auto;
+
+    position: relative;
 }
 
 .event-group-fork {
@@ -64,19 +70,24 @@ body {
     margin: 0 auto;
 }
 
+.event-group-stem {
+    height: 16px;
+}
+
 .event-sequence-container {
     display: flex;
     flex-direction: row;
     margin: 0 auto;
-    gap: 4px;
     position: relative;
 }
 
 .event-sequence {
     flex: 1;
-    width: 16px;
+    /*width: 16px;*/
     position: relative;
     margin: 0 17px;
+
+    display: flex;
 }
 
 .event-sequence.tracks-2 {
@@ -155,9 +166,8 @@ body {
     margin: 1em auto;
 }
 
-.event-group-branch:before {
-    height: 8px;
-    top: -8px;
+.event-group-stem:before {
+    height: calc(var(--default-timeline-stem) * 2);
     left: calc(100% / 2 - 2px);
 }
 
@@ -171,7 +181,7 @@ body {
     height: calc(100% + 40px);
 }
 
-.event-group-branch:before,
+.event-group-stem:before,
 .event-range:before,
 .event-instance:before {
     content: '';
