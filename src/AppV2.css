@@ -127,6 +127,7 @@ body {
     width: 150px;
     padding: .5em .75em;
     top: 0;
+    display: none;
 }
 
 .event-range-bubble.left {

@@ -100,9 +100,11 @@ const miniPyramidGraph: EventGraph = [
 
 const nestedGroup1: EventGroup = [
     [
+        event1,
         group1
     ],
     [
+        event1,
         group1,
     ]
 ]
@@ -141,6 +143,28 @@ const group2: EventGroup = [
 const collidingInstanceAndRangeGraph: EventGraph = [
     event1,
     group2,
+]
+
+const group2a: EventGroup = [
+    [
+        event1,
+        [
+            [
+                event1,
+            ],
+            [
+                range1,
+            ]
+        ]
+    ],
+    [
+        range1,
+    ]
+]
+
+const miniPyramidWeightedLeftGraph: EventGraph = [
+    event1,
+    group2a,
 ]
 
 const group3: EventGroup = [
@@ -410,6 +434,9 @@ function AppV2() {
             </Timeline>
             <hr/>
             <Timeline graph={medPyramidGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={miniPyramidWeightedLeftGraph}>
             </Timeline>
             <hr/>
             {/*
