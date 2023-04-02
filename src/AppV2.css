@@ -85,7 +85,6 @@ body {
     flex: 1;
     /*width: 16px;*/
     position: relative;
-    margin: 0 17px;
 
     display: flex;
 }
@@ -164,6 +163,11 @@ body {
 .event-range,
 .event-instance {
     margin: 1em auto;
+}
+
+.event-sequence .event-range,
+.event-sequence .event-instance {
+    margin: 1em 17px;
 }
 
 .event-group-stem:before {
