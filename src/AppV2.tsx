@@ -259,15 +259,10 @@ const formatDateRange = (event: Event): string | undefined => {
 }
 
 const EventRange: React.FC<EventRangeProps> = ({ event, height, bubbleSide }) => {
-    const classNames = `event-range-bubble ${bubbleSide}`
     return (
         <React.Fragment>
             <div className="event-range" style={{ height: height + "px" }}>
-                <div className={classNames}>
-                    <div className="event-range-bubble-arrow"></div>
-                    <p>{formatDateRange(event)}</p>
-                    <h1>{event.title}</h1>
-                </div>
+                <EventBubble event={event} bubbleSide={bubbleSide} />
             </div>
         </React.Fragment>
     )
@@ -275,11 +270,30 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height, bubbleSide }) =>
 
 interface EventInstanceProps {
     event: Event,
+    bubbleSide: BubbleSide;
 }
 
-const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
+const EventInstance: React.FC<EventInstanceProps> = ({ event, bubbleSide }) => {
     return (
-        <div className="event-instance"></div>
+        <div className="event-instance">
+            <EventBubble event={event} bubbleSide={bubbleSide} />
+        </div>
+    )
+}
+
+interface EventBubbleProps {
+    event: Event,
+    bubbleSide: BubbleSide;
+}
+
+const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
+    const bubbleClassNames = `event-range-bubble ${bubbleSide}`
+    return (
+        <div className={bubbleClassNames}>
+            <div className="event-range-bubble-arrow"></div>
+            <p>{formatDateRange(event)}</p>
+            <h1>{event.title}</h1>
+        </div>
     )
 }
 
@@ -380,7 +394,7 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
             if (event.startDate) {
                 track.push(<EventRange event={event} height={100} bubbleSide={BubbleSide.LEFT} />)
             } else if (event.date) {
-                track.push(<EventInstance event={event} />)
+                track.push(<EventInstance event={event} bubbleSide={BubbleSide.RIGHT} />)
             }
         }
 

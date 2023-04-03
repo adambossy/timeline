@@ -45,8 +45,6 @@ body {
     background-color: rgb(33, 150, 243);
     position: relative;
     margin: 0 auto;
-    display: grid;
-    place-items: center;
 }
 
 .event-range-bubble {
@@ -56,15 +54,16 @@ body {
     color: white;
     width: 150px;
     padding: .5em .75em;
-    top: 0;
+    position: absolute;
+    z-index: 10000;
 }
 
 .event-range-bubble.left {
-    margin-left: -260px;
+    left: -219px;
 }
 
 .event-range-bubble.right {
-    margin-left: 40px;
+    left: 45px;
 }
 
 .event-range-bubble h1 {
@@ -93,6 +92,8 @@ body {
 .event-range,
 .event-instance {
     margin: 1em auto;
+    display: grid;
+    place-items: center;
 }
 
 .event-sequence .event-range,
@@ -105,10 +106,8 @@ body {
     position: relative;
 }
 
-
 .event-range-bubble-arrow {
     border: 7px solid transparent;
-    top: calc(50% - 7px);
     content: '';
     position: absolute;
     height: 0;
@@ -116,13 +115,15 @@ body {
 }
 
 .left .event-range-bubble-arrow {
-    left: -35px;
+    left: 178px;
     border-left: 7px solid #336699;
+    top: calc(50% - 7px);
 }
 
 .right .event-range-bubble-arrow {
-    left: -29px;
+    left: -17px;
     border-right: 7px solid #336699;
+    top: calc(50% - 7px);
 }
 
 /* All vertical stems coded here */
