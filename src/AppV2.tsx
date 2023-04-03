@@ -238,6 +238,7 @@ enum BubbleSide {
 interface EventRangeProps {
     event: Event,
     height: number;
+    rectOverride?: Rect;
 }
 
 const formatDate = (date?: Date): string | undefined => {
@@ -263,13 +264,13 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' ' + endDate : ''))
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
+const EventRange: React.FC<EventRangeProps> = ({ event, height, rectOverride }) => {
     const branchContext = useContext(BranchContext);
 
     return (
         <React.Fragment>
             <div className="event-range" style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={branchContext} />
+                <EventBubble event={event} bubbleSide={branchContext} rectOverride={rectOverride} />
             </div>
         </React.Fragment>
     );
@@ -277,6 +278,7 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
 
 interface EventInstanceProps {
     event: Event,
+    rectOverride?: Rect;
 }
 
 class EventInstance extends React.Component<EventInstanceProps> {
@@ -288,21 +290,29 @@ class EventInstance extends React.Component<EventInstanceProps> {
     }
 
     render () {
-        const { event } = this.props 
+        const { event, rectOverride } = this.props 
         return (
             <div className="event-instance">
-                <EventBubble event={event} bubbleSide={this.context} />
+                <EventBubble event={event} bubbleSide={this.context} rectOverride={rectOverride} />
             </div>
         )
     }
 }
 
-interface EventBubbleProps {
-    event: Event,
-    bubbleSide: BubbleSide | unknown;
+interface Rect {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
 }
 
-const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
+interface EventBubbleProps {
+    event: Event;
+    bubbleSide: BubbleSide | unknown;
+    rectOverride?: Rect;
+}
+
+const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide, rectOverride }) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
   
@@ -315,6 +325,10 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     }
 
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
+
+    if (rectOverride) {
+        console.log(`rectOverride ${rectOverride}`)
+    }
 
     return (
         <div className={bubbleClassNames} ref={bubbleRef}>
@@ -342,7 +356,7 @@ class EventGroupComponent extends Component<EventGroupProps> {
 
         // Sequences are aka "tracks" are aka "columns"
         const sequences = group.map((track, i) => {
-            return constructGraph(track)
+            return <EventGraphComponent graph={track} bubbleRefOverrides={[]} />
         })
 
         const isLeftBranch = (i: number, length: number): boolean => {
@@ -406,7 +420,12 @@ const EventTrack: React.FC<EventTrackProps> = ({ children }) => {
     )
 }
 
-const constructGraph = (graph: EventGraph): JSX.Element[] => {
+interface EventGraphProps {
+    graph: EventGraph;
+    bubbleRefOverrides?: HTMLDivElement[];
+}
+
+const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverrides }) => {
     let nodes: JSX.Element[] = []
     let track: JSX.Element[] = []
     for (let i = 0; i < graph.length; i++) {
@@ -439,7 +458,11 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
         nodes.push(<EventTrack>{track}</EventTrack>)
     }
 
-    return nodes;
+    return (
+        <React.Fragment>
+            {nodes}
+        </React.Fragment>
+    )
 }
 
 interface TimelineProps {
@@ -448,7 +471,6 @@ interface TimelineProps {
 }
 
 type Vector = [
-    otherBubbleRef: HTMLDivElement,
     dx: number,
     dy: number,
 ];
@@ -474,31 +496,43 @@ const centerY = (bubble: HTMLDivElement) => {
     return rect.y + (rect.height / 2);
 }
 
-const computeVectors = (bubbleRefs: HTMLDivElement[]) => {
-    let refToVectorsMap: Vector[][] = []
+const computeVectorMatrix = (bubbleRefs: HTMLDivElement[]) => {
+    let vectorMatrix: Vector[][] = []
 
     bubbleRefs.forEach(() => {
-        refToVectorsMap.push([])
+        vectorMatrix.push([])
     })
 
     for (let i = 0; i < bubbleRefs.length; i++) {
         const bubbleA = bubbleRefs[i]
         for (let j = i + 1; j < bubbleRefs.length; j++) {
             const bubbleB = bubbleRefs[j]
+            const dx = centerX(bubbleB) - centerX(bubbleA)
+            const dy = centerY(bubbleB) - centerY(bubbleA)
+            const vectorsA = vectorMatrix[i]
+            vectorsA.push([dx, dy])
+            const vectorsB = vectorMatrix[j]
+            vectorsB.push([-dx, -dy])
+        }
+    }
+    vectorMatrix.forEach((v) => {
+        console.log(v)
+    })
+    return vectorMatrix
+}
+
+const applyVectorMatrix = (bubbleRefs: HTMLDivElement[], vectorMatrix: Vector[][]) => {
+    for (let i = 0; i < vectorMatrix.length; i++) {
+        for (let j = i + 1; j < vectorMatrix[i].length; j++) {
+            const bubbleA = bubbleRefs[i]
+            const bubbleB = bubbleRefs[j]
             if (isOverlapping(bubbleA, bubbleB)) {
-                const dx = centerX(bubbleB) - centerX(bubbleA)
-                const dy = centerY(bubbleB) - centerY(bubbleA)
-                const vectorsA = refToVectorsMap[i]
-                vectorsA.push([bubbleB, dx, dy])
-                const vectorsB = refToVectorsMap[j]
-                vectorsB.push([bubbleA, -dx, -dy])
+                const [ dx, dy ] = vectorMatrix[i][j]
+                bubbleA.style.left = (bubbleA.clientLeft - (dx / 2)) + 'px'
+                bubbleA.style.top = (bubbleA.clientTop - (dy / 2)) + 'px'
             }
         }
     }
-    refToVectorsMap.forEach((v) => {
-        console.log(v)
-    })
-    return refToVectorsMap
 }
 
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
@@ -522,6 +556,12 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         graph = sortedEvents
     }
 
+    const [refreshKey, setRefreshKey] = useState(0)
+    
+    const forceRefresh = () => {
+        setRefreshKey(prevKey => prevKey + 1)
+    }
+
     const [bubbleRefs, setBubbleRefs] = useState<HTMLDivElement[]>([]);
 
     const addBubbleRef = useCallback((el: HTMLDivElement | null) => {
@@ -536,16 +576,16 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             return
         }
 
-        const vectors = computeVectors(bubbleRefs)
-        vectors.map((vector, i) => {
+        const vectorMatrix = computeVectorMatrix(bubbleRefs)
+        // applyVectorMatrix(bubbleRefs, vectorMatrix)
 
-        })
+        forceRefresh()
     })
   
     return (
         <div className="timeline">
             <BubbleRefContext.Provider value={addBubbleRef}>
-                {graph && constructGraph(graph)}
+                {graph && <EventGraphComponent graph={graph} bubbleRefOverrides={bubbleRefs} />}
             </BubbleRefContext.Provider>
         </div>
     )
