@@ -307,7 +307,6 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     const addBubbleRef = useContext(BubbleRefContext);
   
     useEffect(() => {
-        console.log(bubbleRef.current);
         addBubbleRef(bubbleRef.current);
     }, [addBubbleRef]);
 
@@ -354,8 +353,6 @@ class EventGroupComponent extends Component<EventGroupProps> {
             return !isLeftBranch(i, length)
         }
 
-        console.log(`this.context ${this.context}`)
-
         return (
             <div className="event-group">
                 <div className="event-sequence-container">
@@ -373,10 +370,6 @@ class EventGroupComponent extends Component<EventGroupProps> {
             </div>
         )
     }
-}
-
-const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
-    return maxA >= minB && maxB >= minA
 }
 
 const buildGraph = (sortedEvents: Event[]) => {
@@ -454,6 +447,60 @@ interface TimelineProps {
     graph?: EventGraph; // (Event | Event[])[];
 }
 
+type Vector = [
+    otherBubbleRef: HTMLDivElement,
+    dx: number,
+    dy: number,
+];
+
+const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
+    return maxA >= minB && maxB >= minA
+}
+
+const isOverlapping = (bubbleA: HTMLDivElement, bubbleB: HTMLDivElement) => {
+    const rectA = bubbleA.getBoundingClientRect();
+    const rectB = bubbleB.getBoundingClientRect();
+    return projectionOverlaps(rectA.x, rectA.x + rectA.width, rectB.x, rectB.x + rectB.width) &&
+        projectionOverlaps(rectA.y, rectA.y + rectA.height, rectB.y, rectB.y + rectB.height)
+}
+
+const centerX = (bubble: HTMLDivElement) => {
+    const rect = bubble.getBoundingClientRect();
+    return rect.x + (rect.width / 2);
+}
+
+const centerY = (bubble: HTMLDivElement) => {
+    const rect = bubble.getBoundingClientRect();
+    return rect.y + (rect.height / 2);
+}
+
+const computeVectors = (bubbleRefs: HTMLDivElement[]) => {
+    let refToVectorsMap: Vector[][] = []
+
+    bubbleRefs.forEach(() => {
+        refToVectorsMap.push([])
+    })
+
+    for (let i = 0; i < bubbleRefs.length; i++) {
+        const bubbleA = bubbleRefs[i]
+        for (let j = i + 1; j < bubbleRefs.length; j++) {
+            const bubbleB = bubbleRefs[j]
+            if (isOverlapping(bubbleA, bubbleB)) {
+                const dx = centerX(bubbleB) - centerX(bubbleA)
+                const dy = centerY(bubbleB) - centerY(bubbleA)
+                const vectorsA = refToVectorsMap[i]
+                vectorsA.push([bubbleB, dx, dy])
+                const vectorsB = refToVectorsMap[j]
+                vectorsB.push([bubbleA, -dx, -dy])
+            }
+        }
+    }
+    refToVectorsMap.forEach((v) => {
+        console.log(v)
+    })
+    return refToVectorsMap
+}
+
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     if ((events === undefined) === (graph === undefined)) {
         throw new Error("Either `events` or `graph` must be defined, but not both.")
@@ -479,10 +526,21 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 
     const addBubbleRef = useCallback((el: HTMLDivElement | null) => {
         if (el) {
-            console.log(`addBubbleRef ${el}`)
             setBubbleRefs((prevRefs) => [...prevRefs, el]);
         }
     }, []);
+
+    useEffect(() => {
+        // useEffect seemed to get called twice per Timeline, and ignore the first, premature call
+        if (!bubbleRefs.length) {
+            return
+        }
+
+        const vectors = computeVectors(bubbleRefs)
+        vectors.map((vector, i) => {
+
+        })
+    })
   
     return (
         <div className="timeline">
