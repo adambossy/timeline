@@ -371,12 +371,6 @@ class EventGroupComponent extends Component<EventGroupProps> {
     }
 }
 
-interface TimelineProps {
-    events?: Event[];
-    graph?: EventGraph; // (Event | Event[])[];
-    children: ReactNode;
-}
-
 const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
     return maxA >= minB && maxB >= minA
 }
@@ -451,7 +445,12 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
     return nodes;
 }
 
-const Timeline: React.FC<TimelineProps> = ({ events, graph, children }) => {
+interface TimelineProps {
+    events?: Event[];
+    graph?: EventGraph; // (Event | Event[])[];
+}
+
+const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     if ((events === undefined) === (graph === undefined)) {
         throw new Error("Either `events` or `graph` must be defined, but not both.")
     }
@@ -482,47 +481,33 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph, children }) => {
 function AppV2() {
     return (
         <React.Fragment>
-            <Timeline graph={singleInstanceGraph}>
-            </Timeline>
+            <Timeline graph={singleInstanceGraph} />
             <hr/>
-            <Timeline graph={twoInstancesGraph}>
-            </Timeline>
+            <Timeline graph={twoInstancesGraph} />
             <hr/>
-            <Timeline graph={threeInstancesGraph}>
-            </Timeline>
+            <Timeline graph={threeInstancesGraph} />
             <hr/>
-            <Timeline graph={mixedEventsGraph}>
-            </Timeline>
+            <Timeline graph={mixedEventsGraph} />
             <hr/>
-            <Timeline graph={collidingInstancesGraph}>
-            </Timeline>
+            <Timeline graph={collidingInstancesGraph} />
             <hr/>
-            <Timeline graph={miniPyramidGraph}>
-            </Timeline>
+            <Timeline graph={miniPyramidGraph} />
             <hr/>
-            <Timeline graph={collidingInstanceAndRangeGraph}>
-            </Timeline>
+            <Timeline graph={collidingInstanceAndRangeGraph} />
             <hr/>
-            <Timeline graph={collidingInstanceAndRangeFlippedGraph}>
-            </Timeline>
+            <Timeline graph={collidingInstanceAndRangeFlippedGraph} />
             <hr/>
-            <Timeline graph={danglingEventGraph}>
-            </Timeline>
+            <Timeline graph={danglingEventGraph} />
             <hr/>
-            <Timeline graph={medPyramidGraph}>
-            </Timeline>
+            <Timeline graph={medPyramidGraph} />
             <hr/>
-            <Timeline graph={largePyramidGraph}>
-            </Timeline>
+            <Timeline graph={largePyramidGraph} />
             <hr/>
-            <Timeline graph={miniPyramidWeightedLeftGraph}>
-            </Timeline>
+            <Timeline graph={miniPyramidWeightedLeftGraph} />
             <hr/>
-            <Timeline graph={miniPyramidWeightedRightGraph}>
-            </Timeline>
+            <Timeline graph={miniPyramidWeightedRightGraph} />
             <hr/>
-            <Timeline graph={threeColumnsGraph}>
-            </Timeline>
+            <Timeline graph={threeColumnsGraph} />
             <hr/>
         </React.Fragment>
     )
