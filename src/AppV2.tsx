@@ -11,22 +11,26 @@ interface Event {
     endDate?: Date;
 }
 
-// type MinLengthArray<T> = [T, T, ...T[]]; // array with two or more elements
 type EventGroup = EventGraph[];
 type EventGraph = (Event | EventGroup)[];
 
 const event1: Event = {
-    title: "Mantle sweeper",
+    title: "Grill master",
+    date: new Date("2010-01-01"),
+}
+
+const event1a: Event = {
+    title: "Dishwasher",
     date: new Date("2010-01-01"),
 }
 
 const event2: Event = {
-    title: "Plate grower",
-    date: new Date("2010-01-01"),
+    title: "Smoothie maker",
+    date: new Date("2011-01-01"),
 }
 
 const event3: Event = {
-    title: "Grocery bagger",
+    title: "Web designer",
     date: new Date("2012-01-01"),
 }
 
@@ -40,7 +44,7 @@ const group1: EventGroup = [
 ]
 
 const range1: Event = {
-    title: "Sheep groomer",
+    title: "Student",
     startDate: new Date("2010-01-01"),
     endDate: new Date("2010-03-01"),
 }
@@ -55,47 +59,25 @@ const group2: EventGroup = [
 ]
 
 const singleInstance: Event[] = [
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-01-01"),
-    },
+    event1,
 ]
 
 const singleInstanceGraph: EventGraph = [
-    {
-            title: "Mantle sweeper",
-            date: new Date("2010-01-01"),
-    },
+    event1,
 ]
 
 const singleRange: Event[] = [
-    {
-        title: "Sheep groomer",
-        startDate: new Date("2010-01-01"),
-        endDate: new Date("2011-01-01"),
-    },
+    range1,
 ]
 
 const twoInstances: Event[] = [
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-01-01"),
-    },
-    {
-        title: "Plate grower",
-        date: new Date("2011-01-01"),
-    },
+    event1,
+    event2,
 ]
 
 const twoInstancesGraph: EventGraph = [
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-01-01"),
-    },
-    {
-        title: "Plate grower",
-        date: new Date("2011-01-01"),
-    },
+    event1,
+    event2,
 ]
 
 const threeInstancesGraph: EventGraph = [
@@ -111,14 +93,8 @@ const mixedEventsGraph: EventGraph = [
 ]
 
 const collidingInstances: Event[] = [
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-01-01"),
-    },
-    {
-        title: "Plate grower",
-        date: new Date("2010-01-01"),
-    },
+    event1,
+    event1a,
 ]
 
 const collidingInstancesGraph: EventGraph = [
@@ -145,16 +121,26 @@ const medPyramidGraph: EventGraph = [
     nestedGroup1 
 ]
 
+const nestedGroup2: EventGroup = [
+    [
+        event1,
+        group1,
+        nestedGroup1,
+    ],
+    [
+        event1,
+        group1,
+        nestedGroup1,
+    ]
+]
+
+const largePyramidGraph: EventGraph = [
+    nestedGroup2
+]
+
 const collidingInstanceAndRange: Event[] = [
-    {
-        title: "Sheep groomer",
-        startDate: new Date("2010-01-01"),
-        endDate: new Date("2010-03-01"),
-    },
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-02-01"),
-    },
+    range1,
+    event2,
 ]
 
 const collidingInstanceAndRangeGraph: EventGraph = [
@@ -238,50 +224,60 @@ const threeColumnsGraph: EventGraph = [
     ]
 ]
 
-/*
-const events: Events = [
-    {
-        title: "Mantle sweeper",
-        date: new Date("2010-01-01"),
-    },
-    {
-        title: "House of card builder",
-        startDate: new Date("2010-01-01"), // no end date, goes until present
-    },
-    {
-        title: "Sheep groomer",
-        startDate: new Date("2010-01-01"),
-        endDate: new Date("2011-01-01"),
-    },
-]
-*/
-
 enum BubbleSide {
     RIGHT = 'right',
     LEFT = 'left',
 }
 
 interface EventRangeProps {
+    event: Event,
     height: number;
     bubbleSide: BubbleSide;
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ height, bubbleSide }) => {
+const formatDate = (date?: Date): string | undefined => {
+    if (typeof date === "undefined") {
+        return undefined
+    }
+
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+  
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+  
+    return `${monthNames[monthIndex]} ${year}`;
+}
+
+const formatDateRange = (event: Event): string | undefined => {
+    const date_ = formatDate(event.date)
+    const startDate = formatDate(event.startDate)
+    const endDate = formatDate(event.endDate)
+    return date_ || (startDate + (endDate ? ' ' + endDate : ''))
+}
+
+const EventRange: React.FC<EventRangeProps> = ({ event, height, bubbleSide }) => {
     const classNames = `event-range-bubble ${bubbleSide}`
     return (
         <React.Fragment>
             <div className="event-range" style={{ height: height + "px" }}>
                 <div className={classNames}>
                     <div className="event-range-bubble-arrow"></div>
-                    <p>2011 - present</p>
-                    <h1>Creative Director</h1>
+                    <p>{formatDateRange(event)}</p>
+                    <h1>{event.title}</h1>
                 </div>
             </div>
         </React.Fragment>
     )
 }
 
-const EventInstance = () => {
+interface EventInstanceProps {
+    event: Event,
+}
+
+const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
     return (
         <div className="event-instance"></div>
     )
@@ -293,20 +289,18 @@ interface EventGroupProps {
 
 const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     const sequenceRefs = useRef<HTMLDivElement[]>([])
-    const [widths, setWidths] = useState<number[]>([])
+    let widths: number[] = [];
 
     useEffect(() => {
-        sequenceRefs.current.forEach((ref, i) => {
-            console.log(`ref ${ref} width ${ref.clientWidth}`)
-            widths.push(ref.clientWidth)
+        widths = sequenceRefs.current.map((ref, i) => {
+            return ref.clientWidth
         })
-    });
+    })
 
-    let sequences = []; // aka "tracks" aka "columns"
-    for (let i = 0; i < group.length; i++) {
-        console.log(`group[${i}] ${JSON.stringify(group[i])}`);
-        sequences.push(constructGraph(group[i]));
-    }    
+    // Sequences are aka "tracks" are aka "columns"
+    const sequences = group.map((track, i) => {
+        return constructGraph(track)
+    })
 
     return (
         <div className="event-group">
@@ -361,8 +355,6 @@ const buildGraph = (sortedEvents: Event[]) => {
     return graph;
 }
 
-// type EventGroup = (Event | Event[])[];
-
 interface EventTrackProps {
     children: ReactNode;
 }
@@ -386,9 +378,9 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
             if (event.startDate) {
-                track.push(<EventRange height={100} bubbleSide={BubbleSide.LEFT} />)
+                track.push(<EventRange event={event} height={100} bubbleSide={BubbleSide.LEFT} />)
             } else if (event.date) {
-                track.push(<EventInstance />)
+                track.push(<EventInstance event={event} />)
             }
         }
 
@@ -474,6 +466,9 @@ function AppV2() {
             <Timeline graph={medPyramidGraph}>
             </Timeline>
             <hr/>
+            <Timeline graph={largePyramidGraph}>
+            </Timeline>
+            <hr/>
             <Timeline graph={miniPyramidWeightedLeftGraph}>
             </Timeline>
             <hr/>
@@ -483,46 +478,6 @@ function AppV2() {
             <Timeline graph={threeColumnsGraph}>
             </Timeline>
             <hr/>
-            {/*
-            <Timeline events={singleInstance}>
-                <EventInstance />
-            </Timeline>
-            <hr/>
-            <Timeline events={singleRange}>
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-            </Timeline>
-            <hr/>
-            <Timeline events={twoInstances}>
-                <EventInstance />
-                <EventInstance />
-            </Timeline>
-            <hr/>
-            <Timeline events={collidingInstances}>
-                <EventInstance />
-                <EventInstance />
-            </Timeline>
-            <hr/>
-            <Timeline events={collidingInstanceAndRange}>
-                <EventInstance />
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-            </Timeline>
-            {/*
-            <hr/>
-            <Timeline>
-                <EventInstance />
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-            </Timeline>
-            <hr/>
-            <Timeline>
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                <EventInstance />
-            </Timeline>
-            <hr/>
-            <Timeline>
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-                <EventRange height={100} bubbleSide={BubbleSide.LEFT}  />
-            </Timeline>
-            */}
         </React.Fragment>
     )
 }

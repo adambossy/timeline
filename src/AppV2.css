@@ -213,15 +213,15 @@ body {
 
 .event-range-bubble-arrow {
     border: 7px solid transparent;
-    top: 22px;
+    top: calc(50% - 7px);
     content: '';
-    position: relative;
+    position: absolute;
     height: 0;
     width: 0;
 }
 
 .left .event-range-bubble-arrow {
-    left: 166px;
+    left: -35px;
     border-left: 7px solid #336699;
 }
 
