@@ -302,15 +302,6 @@ interface EventGroupProps {
 }
 
 const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
-    const sequenceRefs = useRef<HTMLDivElement[]>([])
-    let widths: number[] = [];
-
-    useEffect(() => {
-        widths = sequenceRefs.current.map((ref, i) => {
-            return ref.clientWidth
-        })
-    })
-
     // Sequences are aka "tracks" are aka "columns"
     const sequences = group.map((track, i) => {
         return constructGraph(track)
@@ -321,17 +312,7 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
             <div className="event-sequence-container">
             {
                 sequences.map((sequence, i) => {
-                    return (
-                        <div
-                            className="event-sequence"
-                            ref={(el) => {
-                                if (el) {
-                                    sequenceRefs.current[i] = el
-                                }
-                            }}>
-                            {sequence}
-                        </div>
-                    )
+                    return <div className="event-sequence">{sequence}</div>
                 })
             }
             </div>
