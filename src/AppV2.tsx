@@ -1,7 +1,10 @@
-import React, { ReactNode, useRef, useEffect, useState } from 'react';
+import React, { Component, ReactNode, useRef, useEffect, useState } from 'react';
 import 'react-vertical-timeline-component/style.min.css';
 
 import './AppV2.css';
+import { ThemeContext } from '@emotion/react';
+
+const BranchContext = React.createContext('');
 
 
 interface Event {
@@ -232,7 +235,6 @@ enum BubbleSide {
 interface EventRangeProps {
     event: Event,
     height: number;
-    bubbleSide: BubbleSide;
 }
 
 const formatDate = (date?: Date): string | undefined => {
@@ -258,35 +260,58 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' ' + endDate : ''))
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ event, height, bubbleSide }) => {
-    return (
-        <React.Fragment>
-            <div className="event-range" style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={bubbleSide} />
-            </div>
-        </React.Fragment>
-    )
+// const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
+class EventRange extends React.Component<EventRangeProps> {
+
+    static contextType = BranchContext
+
+    constructor(props: EventRangeProps) {
+        super(props)
+    }
+
+    render() {
+        const { event, height } = this.props 
+        return (
+            <React.Fragment>
+                <div className="event-range" style={{ height: height + "px" }}>
+                    <EventBubble event={event} bubbleSide={this.context} />
+                </div>
+            </React.Fragment>
+        )
+    };
 }
 
 interface EventInstanceProps {
     event: Event,
-    bubbleSide: BubbleSide;
 }
 
-const EventInstance: React.FC<EventInstanceProps> = ({ event, bubbleSide }) => {
-    return (
-        <div className="event-instance">
-            <EventBubble event={event} bubbleSide={bubbleSide} />
-        </div>
-    )
+class EventInstance extends React.Component<EventInstanceProps> {
+
+    static contextType = BranchContext
+
+    constructor(props: EventInstanceProps) {
+        super(props)
+    }
+
+    render () {
+        const { event } = this.props 
+        return (
+            <div className="event-instance">
+                <EventBubble event={event} bubbleSide={this.context} />
+            </div>
+        )
+    }
 }
 
 interface EventBubbleProps {
     event: Event,
-    bubbleSide: BubbleSide;
+    bubbleSide: BubbleSide | unknown;
 }
 
 const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
+    if (!bubbleSide) {
+        bubbleSide = BubbleSide.LEFT
+    }
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
     return (
         <div className={bubbleClassNames}>
@@ -301,23 +326,49 @@ interface EventGroupProps {
     group: EventGroup;
 }
 
-const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
-    // Sequences are aka "tracks" are aka "columns"
-    const sequences = group.map((track, i) => {
-        return constructGraph(track)
-    })
+class EventGroupComponent extends Component<EventGroupProps> {
 
-    return (
-        <div className="event-group">
-            <div className="event-sequence-container">
-            {
-                sequences.map((sequence, i) => {
-                    return <div className="event-sequence">{sequence}</div>
-                })
-            }
+    static contextType = BranchContext;
+    
+    constructor(props: EventGroupProps) {
+        super(props);
+    }
+
+    render() {
+        const { group } = this.props
+
+        // Sequences are aka "tracks" are aka "columns"
+        const sequences = group.map((track, i) => {
+            return constructGraph(track)
+        })
+
+        const isLeftBranch = (i: number, length: number): boolean => {
+            return i < (length / 2)
+        }
+
+        const isRightBranch = (i: number, length: number): boolean => {
+            return !isLeftBranch(i, length)
+        }
+
+        console.log(`this.context ${this.context}`)
+
+        return (
+            <div className="event-group">
+                <div className="event-sequence-container">
+                {
+                    sequences.map((sequence, i) => {
+                        const context = this.context ? this.context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
+                        return (
+                            <BranchContext.Provider value={context}>
+                                <div className="event-sequence">{sequence}</div>
+                            </BranchContext.Provider>
+                        )
+                    })
+                }
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
 }
 
 interface TimelineProps {
@@ -373,9 +424,9 @@ const constructGraph = (graph: EventGraph): JSX.Element[] => {
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
             if (event.startDate) {
-                track.push(<EventRange event={event} height={100} bubbleSide={BubbleSide.LEFT} />)
+                track.push(<EventRange event={event} height={100} />)
             } else if (event.date) {
-                track.push(<EventInstance event={event} bubbleSide={BubbleSide.RIGHT} />)
+                track.push(<EventInstance event={event} />)
             }
         }
 
