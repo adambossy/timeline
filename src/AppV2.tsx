@@ -11,6 +11,49 @@ interface Event {
     endDate?: Date;
 }
 
+// type MinLengthArray<T> = [T, T, ...T[]]; // array with two or more elements
+type EventGroup = EventGraph[];
+type EventGraph = (Event | EventGroup)[];
+
+const event1: Event = {
+    title: "Mantle sweeper",
+    date: new Date("2010-01-01"),
+}
+
+const event2: Event = {
+    title: "Plate grower",
+    date: new Date("2010-01-01"),
+}
+
+const event3: Event = {
+    title: "Grocery bagger",
+    date: new Date("2012-01-01"),
+}
+
+const group1: EventGroup = [
+    [
+        event1,
+    ],
+    [
+        event2,
+    ]
+]
+
+const range1: Event = {
+    title: "Sheep groomer",
+    startDate: new Date("2010-01-01"),
+    endDate: new Date("2010-03-01"),
+}
+
+const group2: EventGroup = [
+    [
+        event1,
+    ],
+    [
+        range1,
+    ]
+]
+
 const singleInstance: Event[] = [
     {
         title: "Mantle sweeper",
@@ -55,6 +98,18 @@ const twoInstancesGraph: EventGraph = [
     },
 ]
 
+const threeInstancesGraph: EventGraph = [
+    event1,
+    event2,
+    event3,
+]
+
+const mixedEventsGraph: EventGraph = [
+    event1,
+    range1,
+    event2,
+]
+
 const collidingInstances: Event[] = [
     {
         title: "Mantle sweeper",
@@ -64,29 +119,6 @@ const collidingInstances: Event[] = [
         title: "Plate grower",
         date: new Date("2010-01-01"),
     },
-]
-
-// type MinLengthArray<T> = [T, T, ...T[]]; // array with two or more elements
-type EventGroup = EventGraph[];
-type EventGraph = (Event | EventGroup)[];
-
-const event1: Event = {
-    title: "Mantle sweeper",
-    date: new Date("2010-01-01"),
-}
-
-const event2: Event = {
-    title: "Plate grower",
-    date: new Date("2010-01-01"),
-}
-
-const group1: EventGroup = [
-    [
-        event1,
-    ],
-    [
-        event2,
-    ]
 ]
 
 const collidingInstancesGraph: EventGraph = [
@@ -123,21 +155,6 @@ const collidingInstanceAndRange: Event[] = [
         title: "Mantle sweeper",
         date: new Date("2010-02-01"),
     },
-]
-
-const range1: Event = {
-    title: "Sheep groomer",
-    startDate: new Date("2010-01-01"),
-    endDate: new Date("2010-03-01"),
-}
-
-const group2: EventGroup = [
-    [
-        event1,
-    ],
-    [
-        range1,
-    ]
 ]
 
 const collidingInstanceAndRangeGraph: EventGraph = [
@@ -293,7 +310,6 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
 
     return (
         <div className="event-group">
-            <div className="event-group-stem"></div>
             <div className="event-sequence-container">
             {
                 sequences.map((sequence, i) => {
@@ -311,7 +327,6 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
                 })
             }
             </div>
-            <div className="event-group-stem"></div>
         </div>
     )
 }
@@ -355,7 +370,11 @@ interface EventTrackProps {
 // TODO Rename EventTrack -> EventSequence and EventSequence -> EventColumnContainer or something like that
 // Also, a group is a collection of tracks - I wonder if I can be more explicit about that
 const EventTrack: React.FC<EventTrackProps> = ({ children }) => {
-    return <div className="event-track">{children}</div>
+    return (
+        <div className="event-track">
+            {children}
+        </div>
+    )
 }
 
 const constructGraph = (graph: EventGraph): JSX.Element[] => {
@@ -429,6 +448,12 @@ function AppV2() {
             </Timeline>
             <hr/>
             <Timeline graph={twoInstancesGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={threeInstancesGraph}>
+            </Timeline>
+            <hr/>
+            <Timeline graph={mixedEventsGraph}>
             </Timeline>
             <hr/>
             <Timeline graph={collidingInstancesGraph}>

@@ -3,33 +3,20 @@ body {
 }
 
 .timeline {
-    /*display: flex;*/
     width: 90%;
     position: relative;
-    margin: 0 auto;
+    margin: 16px auto 0;
 }
 
-.timeline-stem {
-    position: relative;
-    width: 100%;
-}
-
-.timeline-stem:before {
-    left: 50%;
-    margin-left: -2px;
+.timeline:before {
+    left: calc(50% - 2px);
     content: '';
     position: absolute;
-    top: 0;
-    height: 100%;
+    top: -16px;
+    height: 16px;
     width: 4px;
     background-color: white;
 }
-
-/*
-.timeline * {
-    box-sizing: border-box;
-}
-*/
 
 :root {
     --default-timeline-stem: 8px;
@@ -39,29 +26,18 @@ body {
     display: flex;
     flex-direction: column;
     flex-basis: auto;
-
     position: relative;
+    margin-bottom: 16px;
 }
 
-.event-group-fork {
-    height: 30px;
-    width: 100%;
-    position: relative;
-}
-
-.event-group-fork-line-container {
-    width: 100%;
+.event-group:after {
+    left: calc(50% - 2px);
+    content: '';
     position: absolute;
-    top: 0px;
-    left: 0px;
-}
-
-.event-group-fork-line {
-    position: relative;
-    margin-left: 50%;
-    width: 40px;
-    background: white;
-    height: 4px;
+    top: 100%;
+    height: 16px;
+    width: 4px;
+    background-color: white;
 }
 
 .event-group-branch {
@@ -152,7 +128,6 @@ body {
     width: 150px;
     padding: .5em .75em;
     top: 0;
-    display: none;
 }
 
 .event-range-bubble.left {
@@ -207,8 +182,14 @@ body {
 }
 
 .event-track:before {
-    height: 100%;
+    top: 0;
+    height: calc(100% + 16px);
     left: calc(50% - 2px);
+}
+
+.event-sequence .event-track:before {
+    top: 0;
+    height: 100%;
 }
 
 .event-instance:before {
