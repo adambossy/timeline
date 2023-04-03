@@ -1,10 +1,13 @@
-import React, { Component, ReactNode, useRef, useEffect, useState } from 'react';
+import React, { Component, ReactNode, useCallback, useContext, useRef, useEffect, useState } from 'react';
 import 'react-vertical-timeline-component/style.min.css';
 
 import './AppV2.css';
 import { ThemeContext } from '@emotion/react';
 
 const BranchContext = React.createContext('');
+
+type BubbleRefContextType = (el: HTMLDivElement | null) => void;
+const BubbleRefContext = React.createContext<BubbleRefContextType>(() => {});
 
 
 interface Event {
@@ -260,26 +263,17 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' ' + endDate : ''))
 }
 
-// const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
-class EventRange extends React.Component<EventRangeProps> {
+const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
+    const branchContext = useContext(BranchContext);
 
-    static contextType = BranchContext
-
-    constructor(props: EventRangeProps) {
-        super(props)
-    }
-
-    render() {
-        const { event, height } = this.props 
-        return (
-            <React.Fragment>
-                <div className="event-range" style={{ height: height + "px" }}>
-                    <EventBubble event={event} bubbleSide={this.context} />
-                </div>
-            </React.Fragment>
-        )
-    };
-}
+    return (
+        <React.Fragment>
+            <div className="event-range" style={{ height: height + "px" }}>
+                <EventBubble event={event} bubbleSide={branchContext} />
+            </div>
+        </React.Fragment>
+    );
+};
 
 interface EventInstanceProps {
     event: Event,
@@ -309,12 +303,22 @@ interface EventBubbleProps {
 }
 
 const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
+    const bubbleRef = useRef<HTMLDivElement | null>(null);
+    const addBubbleRef = useContext(BubbleRefContext);
+  
+    useEffect(() => {
+        console.log(bubbleRef.current);
+        addBubbleRef(bubbleRef.current);
+    }, [addBubbleRef]);
+
     if (!bubbleSide) {
-        bubbleSide = BubbleSide.LEFT
+        bubbleSide = BubbleSide.LEFT;
     }
+
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
+
     return (
-        <div className={bubbleClassNames}>
+        <div className={bubbleClassNames} ref={bubbleRef}>
             <div className="event-range-bubble-arrow"></div>
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
@@ -471,9 +475,20 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         graph = sortedEvents
     }
 
+    const [bubbleRefs, setBubbleRefs] = useState<HTMLDivElement[]>([]);
+
+    const addBubbleRef = useCallback((el: HTMLDivElement | null) => {
+        if (el) {
+            console.log(`addBubbleRef ${el}`)
+            setBubbleRefs((prevRefs) => [...prevRefs, el]);
+        }
+    }, []);
+  
     return (
         <div className="timeline">
-            {graph && constructGraph(graph)}
+            <BubbleRefContext.Provider value={addBubbleRef}>
+                {graph && constructGraph(graph)}
+            </BubbleRefContext.Provider>
         </div>
     )
 }
