@@ -8,16 +8,6 @@ body {
     margin: 16px auto 0;
 }
 
-.timeline:before {
-    left: calc(50% - 2px);
-    content: '';
-    position: absolute;
-    top: -16px;
-    height: 16px;
-    width: 4px;
-    background-color: white;
-}
-
 :root {
     --default-timeline-stem: 8px;
 }
@@ -30,26 +20,6 @@ body {
     margin-bottom: 16px;
 }
 
-.event-group:after {
-    left: calc(50% - 2px);
-    content: '';
-    position: absolute;
-    top: 100%;
-    height: 16px;
-    width: 4px;
-    background-color: white;
-}
-
-.event-group-branch {
-    height: 4px;
-    background-color: white;
-    margin: 0 auto;
-}
-
-.event-group-stem {
-    height: 16px;
-}
-
 .event-sequence-container {
     display: flex;
     flex-direction: row;
@@ -59,7 +29,6 @@ body {
 
 .event-sequence {
     flex: 1;
-    /*width: 16px;*/
     position: relative;
 
     display: flex;
@@ -68,52 +37,12 @@ body {
     padding: 4px 0;
 }
 
-.event-sequence.tracks-2 {
-    width: 104px;
-}
-
-.event-sequence::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    height: 4px;
-    background-color: white;
-    left: 0;
-    width: 100%;
-}
-
-.event-sequence:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    height: 4px;
-    background-color: white;
-    left: 0;
-    width: 100%;
-}
-
-.event-sequence:first-child:after,
-.event-sequence:first-child:before {
-    left: calc(50% - 2px);
-    width: calc(50% + 2px);
-}
-
-.event-sequence:last-child:after,
-.event-sequence:last-child:before {
-    left: 0;
-    width: calc(50% + 2px);
-}
-
 .event-range {
     width: 8px;
     height: 300px;
     border-radius: 8px;
     border: 4px solid white;
     background-color: rgb(33, 150, 243);
-    /*
-    -webkit-box-shadow: 0 0 0 4px #fff, inset 0 2px 0 rgba(0,0,0,.08), 0 3px 0 4px rgba(0,0,0,.05);
-    box-shadow: 0 0 0 4px #fff, inset 0 2px 0 rgba(0,0,0,.08), 0 3px 0 4px rgba(0,0,0,.05);
-    */
     position: relative;
     margin: 0 auto;
     display: grid;
@@ -171,17 +100,45 @@ body {
     margin: 1em 17px;
 }
 
-.event-group-stem:before {
-    height: calc(var(--default-timeline-stem) * 2);
-    left: calc(100% / 2 - 2px);
-}
-
 .event-track {
     flex: 1;
     position: relative;
 }
 
+
+.event-range-bubble-arrow {
+    border: 7px solid transparent;
+    top: calc(50% - 7px);
+    content: '';
+    position: absolute;
+    height: 0;
+    width: 0;
+}
+
+.left .event-range-bubble-arrow {
+    left: -35px;
+    border-left: 7px solid #336699;
+}
+
+.right .event-range-bubble-arrow {
+    left: -29px;
+    border-right: 7px solid #336699;
+}
+
+/* All vertical stems coded here */
+
+.timeline:before {
+    top: -16px;
+    height: 16px;
+}
+
+.event-group:after {
+    top: 100%;
+    height: 16px;
+}
+
 .event-track:before {
+    z-index: -1;
     top: 0;
     height: calc(100% + 16px);
     left: calc(50% - 2px);
@@ -202,30 +159,48 @@ body {
     height: calc(100% + 40px);
 }
 
-.event-group-stem:before,
+.timeline:before,
+.event-group:after,
 .event-track:before {
+    left: calc(50% - 2px);
     content: '';
     position: absolute;
-    z-index: -1;
     width: 4px;
     background-color: white;
 }
 
-.event-range-bubble-arrow {
-    border: 7px solid transparent;
-    top: calc(50% - 7px);
+/* Horizontal branch stems for groups */
+
+.event-sequence:before {
     content: '';
     position: absolute;
-    height: 0;
-    width: 0;
+    top: 0;
+    height: 4px;
+    background-color: white;
+    left: 0;
+    width: 100%;
 }
 
-.left .event-range-bubble-arrow {
-    left: -35px;
-    border-left: 7px solid #336699;
+.event-sequence:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    height: 4px;
+    background-color: white;
+    left: 0;
+    width: 100%;
 }
 
-.right .event-range-bubble-arrow {
-    left: -29px;
-    border-right: 7px solid #336699;
+.event-sequence:first-child:after,
+.event-sequence:first-child:before {
+    left: calc(50% - 2px);
+    width: calc(50% + 2px);
 }
+
+.event-sequence:last-child:after,
+.event-sequence:last-child:before {
+    left: 0;
+    width: calc(50% + 2px);
+}
+
+/* End horizontal branch stems for groups */
