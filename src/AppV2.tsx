@@ -1,5 +1,43 @@
 import React, { Component, ReactNode, useCallback, useContext, useRef, useEffect, useState } from 'react';
+import { cloneDeep, isEqual } from 'lodash';
 import './AppV2.css';
+
+
+/*
+function deepCopy<T>(obj: T): T {
+    var copy;
+
+    // Handle the 3 simple types, and null or undefined
+    if (null == obj || "object" != typeof obj) return obj;
+
+    // Handle Date
+    if (obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
+    }
+
+    // Handle Array
+    if (obj instanceof Array) {
+        copy = [];
+        for (var i = 0, len = obj.length; i < len; i++) {
+            copy[i] = deepCopy(obj[i]);
+        }
+        return copy;
+    }
+
+    // Handle Object
+    if (obj instanceof Object) {
+        copy = {};
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = deepCopy(obj[attr]);
+        }
+        return copy;
+    }
+
+    throw new Error("Unable to copy obj! Its type isn't supported.");
+}
+*/
 
 
 const SHOW_VECTORS = false
@@ -499,7 +537,80 @@ interface EventGraphProps {
     bubbleRefOverrides?: HTMLDivElement[];
 }
 
+/*
+const graphsEqual = (graphA: EventGraph, graphB: EventGraph): boolean => {
+    if (graphA.length != graphB.length) {
+        return false
+    }
+
+    for (let i = 0; i < graphA.length; i++) {
+        const eventOrGroupA = graphA[i];
+        const eventOrGroupB = graphB[i];
+
+        if (typeof eventOrGroupA != typeof eventOrGroupB) {
+            return false
+        }
+
+        if (Array.isArray(eventOrGroupA)) {
+            const groupA = eventOrGroupA as EventGroup
+            const groupB = eventOrGroupB as EventGroup
+            const groupsEqual = groupA.map((trackA, j) => {
+                const trackB = groupB[j]
+                return graphsEqual(trackA, trackB)
+            })
+            // TODO combine with previous line
+            if (!groupsEqual.every(value => value === true))  {
+                return false
+            }
+        } else {
+            const eventA = eventOrGroupA as Event
+            const eventB = eventOrGroupB as Event
+            if (!(eventA.title == eventB.title && eventA.rect == eventB.rect)) { // HACK! Javascript somehow doesn't have a freakin' equals operator on objects
+                return false
+            }
+        }
+    }
+
+    return true
+}
+*/
+
+
+const printGraph = (graph: EventGraph, indent: number = 4): string => {
+
+    const printEvent = (event: Event): string => {
+        return JSON.stringify({
+            title: event.title,
+            date: event.date,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            rect: event.rect,
+            vectorLength: event.vectors && event.vectors.length,
+        })
+    }
+
+    let s = ' '.repeat(indent - 4) + '[\n'
+    for (let i = 0; i < graph.length; i++) {
+        const eventOrGroup = graph[i];
+        if (Array.isArray(eventOrGroup)) {
+            const group = eventOrGroup as EventGroup
+            s += group.map((track) => {
+                return printGraph(track, indent + 4)
+            }).join('\n')
+        } else {
+            const event = eventOrGroup as Event
+            s += ' '.repeat(indent) + printEvent(event) + '\n'
+        }
+    }
+    s += ' '.repeat(indent - 4) + ']\n'
+    return s
+}
+
 // FIXME stopgap solution to copy leaf nodes (events) that are reused to avoid a bug when their .rect and .vectors properties get overwritten
+const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
+    return cloneDeep(graph)
+}
+/*
 const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
     let nodes: EventGraph = []
     let track: Event[] = []
@@ -509,14 +620,14 @@ const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
 
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
-            track.push({ ...event })
+            track.push(cloneDeep(event))
         } else {
             if (track.length > 0) {
                 nodes.push(...track)
                 track = []
             }
             const group = eventOrGroup as EventGroup
-            nodes.push(group.map((track, j) => {
+            nodes.push(group.map((track) => {
                 return uniqifyEventGraph(track)
             }))
         }
@@ -528,6 +639,7 @@ const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
 
     return nodes
 }
+*/
 
 const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverrides }) => {
     let nodes: JSX.Element[] = []
@@ -678,7 +790,7 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
                 event.rect.y -= offsetY
                 */
                 event.rect.x -= dx / 4
-                event.rect.y -= dy / 4
+                event.rect.y -= dy / 16
 
                 if (event.title == 'Smoothie maker') {
                     console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x} event.rect.width ${event.rect.width}`)
@@ -746,15 +858,32 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 
     const step = () => {
         console.log('step')
-
-        applyVectors(eventAndRefPairs)
-        computeVectorMatrix(eventAndRefPairs, timelineRefs)
         if (graph) {
+            const oldGraph = uniqifyEventGraph(graph)
+            console.log(`OLD GRAPH\n${printGraph(graph)}`)
+
+            applyVectors(eventAndRefPairs)
+            computeVectorMatrix(eventAndRefPairs, timelineRefs)
+
             graph = uniqifyEventGraph(graph)
+            console.log(`NEW GRAPH\n${printGraph(graph)}`)
+            if (isEqual(graph, oldGraph)) {
+                console.log('Iteration done!')
+            } else {
+                console.log('Need more iterations!')
+            }
             setGraph(graph)
         }
-        // TODO find a way to dynamically recompute these after they're calculated
     }
+
+    /*
+    const e1 = event1
+    console.log(`e1 == e1 ${e1 == e1}`)
+    console.log(`e1 === e1 ${e1 === e1}`)
+    console.log(`e1 == cloneDeep(e1) ${e1 == cloneDeep(e1)}`)
+    console.log(`e1 === cloneDeep(e1) ${e1 === cloneDeep(e1)}`)
+    console.log(`isEqual(e1,cloneDeep(e1)) ${isEqual(e1, cloneDeep(e1))}`)
+    */
 
     return (
         <div className="timeline">
@@ -776,10 +905,13 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 function AppV2() {
     return (
         <React.Fragment>
+            {/*
             <Timeline graph={uniqifyEventGraph(singleInstanceGraph)} />
             <hr />
+            */}
             <Timeline graph={uniqifyEventGraph(twoInstancesGraph)} />
             <hr />
+            {/*
             <Timeline graph={uniqifyEventGraph(threeInstancesGraph)} />
             <hr />
             <Timeline graph={uniqifyEventGraph(mixedEventsGraph)} />
@@ -804,6 +936,7 @@ function AppV2() {
             <hr />
             <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
             <hr />
+            */}
         </React.Fragment>
     )
 }
