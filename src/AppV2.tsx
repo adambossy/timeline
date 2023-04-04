@@ -389,47 +389,38 @@ interface EventGroupProps {
     group: EventGroup;
 }
 
-class EventGroupComponent extends Component<EventGroupProps> {
+const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
+    const context = useContext(BranchContext);
 
-    static contextType = BranchContext;
-    
-    constructor(props: EventGroupProps) {
-        super(props);
+    // Sequences are aka "tracks" are aka "columns"
+    const sequences = group.map((track, i) => {
+        return <EventGraphComponent graph={track} bubbleRefOverrides={[]} />
+    })
+
+    const isLeftBranch = (i: number, length: number): boolean => {
+        return i < (length / 2)
     }
 
-    render() {
-        const { group } = this.props
+    const isRightBranch = (i: number, length: number): boolean => {
+        return !isLeftBranch(i, length)
+    }
 
-        // Sequences are aka "tracks" are aka "columns"
-        const sequences = group.map((track, i) => {
-            return <EventGraphComponent graph={track} bubbleRefOverrides={[]} />
-        })
-
-        const isLeftBranch = (i: number, length: number): boolean => {
-            return i < (length / 2)
-        }
-
-        const isRightBranch = (i: number, length: number): boolean => {
-            return !isLeftBranch(i, length)
-        }
-
-        return (
-            <div className="event-group">
-                <div className="event-sequence-container">
-                {
-                    sequences.map((sequence, i) => {
-                        const context = this.context ? this.context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
-                        return (
-                            <BranchContext.Provider value={context}>
-                                <div className="event-sequence">{sequence}</div>
-                            </BranchContext.Provider>
-                        )
-                    })
-                }
-                </div>
+    return (
+        <div className="event-group">
+            <div className="event-sequence-container">
+            {
+                sequences.map((sequence, i) => {
+                    const currentContext = context ? context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
+                    return (
+                        <BranchContext.Provider value={currentContext}>
+                            <div className="event-sequence">{sequence}</div>
+                        </BranchContext.Provider>
+                    )
+                })
+            }
             </div>
-        )
-    }
+        </div>
+    )
 }
 
 const buildGraph = (sortedEvents: Event[]) => {
