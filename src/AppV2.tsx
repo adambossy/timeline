@@ -3,41 +3,49 @@ import { cloneDeep, isEqual } from 'lodash';
 import './AppV2.css';
 
 
-/*
 function deepCopy<T>(obj: T): T {
-    var copy;
-
+    let copy: T;
+  
     // Handle the 3 simple types, and null or undefined
-    if (null == obj || "object" != typeof obj) return obj;
-
+    if (null == obj || "object" !== typeof obj) return obj;
+  
+    // Handle DOM node
+    // DON'T copy because there's no use in having orphaned DOM nodes floating around
+    if (obj instanceof Node) {
+      return obj;
+      return copy;
+    }
+  
     // Handle Date
     if (obj instanceof Date) {
-        copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
+      copy = new Date() as unknown as T;
+      (copy as unknown as Date).setTime((obj as unknown as Date).getTime());
+      return copy;
     }
-
+  
     // Handle Array
-    if (obj instanceof Array) {
-        copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i] = deepCopy(obj[i]);
-        }
-        return copy;
+    if (Array.isArray(obj)) {
+      copy = [] as unknown as T;
+      for (let i = 0, len = (obj as unknown as Array<any>).length; i < len; i++) {
+        (copy as unknown as Array<any>)[i] = deepCopy((obj as unknown as Array<any>)[i]);
+      }
+      return copy;
     }
-
+  
     // Handle Object
     if (obj instanceof Object) {
-        copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = deepCopy(obj[attr]);
+      copy = {} as T;
+      for (const attr in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+          (copy as unknown as Record<string, any>)[attr] = deepCopy((obj as unknown as Record<string, any>)[attr]);
         }
-        return copy;
+      }
+      return copy;
     }
-
+  
     throw new Error("Unable to copy obj! Its type isn't supported.");
-}
-*/
+  }
+  
 
 
 const SHOW_VECTORS = false
@@ -52,7 +60,7 @@ const TimelineRefContext = React.createContext<TimelineRefContextType>(() => { }
 
 
 type Vector = [
-    otherRef: HTMLDivElement,
+    other: Rect, // otherRef: HTMLDivElement,
     dx: number,
     dy: number,
 ];
@@ -60,6 +68,8 @@ type Vector = [
 interface Rect {
     x: number,
     y: number,
+    styleX: number, // relative to parent, used for style: left
+    styleY: number, // relative to parent, used for style: top
     width: number,
     height: number,
 }
@@ -120,6 +130,12 @@ const range1: Event = {
     title: "Student",
     startDate: new Date("2010-01-01"),
     endDate: new Date("2010-03-01"),
+}
+
+const range2: Event = {
+    title: "Grad Student",
+    startDate: new Date("2013-01-01"),
+    endDate: new Date("2016-03-01"),
 }
 
 const group2: EventGroup = [
@@ -262,13 +278,13 @@ const group2b: EventGroup = [
         range1,
     ],
     [
-        event1,
+        event1a,
         [
             [
-                event1,
+                event2,
             ],
             [
-                range1,
+                range2,
             ]
         ]
     ]
@@ -438,8 +454,8 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     })
 
     const style = event.rect ? {
-        left: event.rect.x,
-        top: event.rect.y,
+        left: event.rect.styleX,
+        top: event.rect.styleY,
     } : {}
 
     return (
@@ -585,7 +601,7 @@ const printGraph = (graph: EventGraph, indent: number = 4): string => {
             startDate: event.startDate,
             endDate: event.endDate,
             rect: event.rect,
-            vectorLength: event.vectors && event.vectors.length,
+            vectorLength: '[' + (event.vectors || []).map(([ otherRef, dx, dy ]) => `[${otherRef}, ${dx}, ${dy}]` ).join(',') + ']',
         })
     }
 
@@ -689,20 +705,32 @@ const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: numb
     return maxA >= minB && maxB >= minA
 }
 
-const isOverlapping = (bubbleA: HTMLDivElement, bubbleB: HTMLDivElement) => {
-    const rectA = bubbleA.getBoundingClientRect();
-    const rectB = bubbleB.getBoundingClientRect();
+const isOverlapping = (rectA: Rect, rectB: Rect) => {
     return projectionOverlaps(rectA.x, rectA.x + rectA.width, rectB.x, rectB.x + rectB.width) &&
         projectionOverlaps(rectA.y, rectA.y + rectA.height, rectB.y, rectB.y + rectB.height)
 }
 
-const centerX = (bubble: HTMLDivElement) => {
-    const rect = bubble.getBoundingClientRect();
+const rectFromRef = (ref: HTMLDivElement): Rect => {
+    const rect = ref.getBoundingClientRect()
+    return  {
+        x: rect.x,
+        y: rect.y,
+        styleX: ref.offsetLeft,
+        styleY: ref.offsetTop,
+        width: rect.width,
+        height: rect.height,
+    }
+}
+
+const centerX = (rect: Rect) => {
+//const centerX = (bubble: HTMLDivElement) => {
+    // const rect = bubble.getBoundingClientRect();
     return rect.x + (rect.width / 2);
 }
 
-const centerY = (bubble: HTMLDivElement) => {
-    const rect = bubble.getBoundingClientRect();
+const centerY = (rect: Rect) => {
+// const centerY = (bubble: HTMLDivElement) => {
+    // const rect = bubble.getBoundingClientRect();
     return rect.y + (rect.height / 2);
 }
 
@@ -713,33 +741,39 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
         vectorMatrix.push([])
         event.vectors = vectorMatrix[i] // reset vectors
         if (!event.rect) {
+            /*
             event.rect = ref.getBoundingClientRect()
             event.rect.x = ref.offsetLeft // override
             event.rect.y = ref.offsetTop // override
+            */
+            event.rect = rectFromRef(ref) 
         }
     })
 
     for (let i = 0; i < eventAndRefPairs.length; i++) {
-        const [eventA, bubbleA] = eventAndRefPairs[i]
+        const [eventA, refA] = eventAndRefPairs[i]
         for (let j = i + 1; j < eventAndRefPairs.length; j++) {
-            const [eventB, bubbleB] = eventAndRefPairs[j]
-            const dx = centerX(bubbleB) - centerX(bubbleA)
-            const dy = centerY(bubbleB) - centerY(bubbleA)
-            if (eventA.vectors && eventB.rect) {
-                eventA.vectors.push([bubbleB, dx, dy])
-            }
-            if (eventB.vectors && eventA.rect) {
-                eventB.vectors.push([bubbleA, -dx, -dy])
+            const [eventB, refB] = eventAndRefPairs[j]
+            if (eventA.rect && eventB.rect && eventA.vectors && eventB.vectors) {
+                const dx = centerX(eventB.rect) - centerX(eventA.rect)
+                const dy = centerY(eventB.rect) - centerY(eventA.rect)
+                eventA.vectors.push([eventB.rect, dx, dy])
+                eventB.vectors.push([eventA.rect, -dx, -dy])
+                // console.log(`eventA ${eventA.title} dx ${dx} dy ${dy}`)
+                // console.log(`eventB ${eventB.title} -dx ${-dx} -dy ${-dy}`)
+                // console.log(`refA.getBoundingClientRect ${JSON.stringify(refA.getBoundingClientRect())}`)
+                // console.log(`refB.getBoundingClientRect ${JSON.stringify(refB.getBoundingClientRect())}`)
             }
         }
 
         // TODO should probably merge all these vectors into a single one
         for (let j = 0; j < timelineRefs.length; j++) {
             const timelineRef = timelineRefs[j]
-            const dx = centerX(timelineRef) - centerX(bubbleA)
-            const dy = centerY(timelineRef) - centerY(bubbleA)
-            if (eventA.vectors) {
-                eventA.vectors.push([timelineRef, dx, dy])
+            if (eventA.rect && eventA.vectors) {
+                const timelineRect = rectFromRef(timelineRef) 
+                const dx = centerX(timelineRect) - centerX(eventA.rect)
+                const dy = centerY(timelineRect) - centerY(eventA.rect)
+                eventA.vectors.push([timelineRect, dx, dy])
             }
         }
     }
@@ -757,15 +791,15 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
 
     eventAndRefPairs.forEach(([event, ref], i) => {
         (event.vectors || []).forEach((vector, i) => {
-            const bubbleA = ref
-            let [bubbleB, dx, dy] = vector
-            if (isOverlapping(bubbleA, bubbleB) && event.rect) {
-                if (event.title == 'Smoothie maker') {
-                    console.log(`x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
-                }
+            // const bubbleA = ref
+            let [otherRect, dx, dy] = vector
+            if (event.rect && isOverlapping(event.rect, otherRect)) {
+                // if (event.title == 'Student') {
+                    console.log(`${event.title} x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
+                // }
 
-                let offsetX
-                let offsetY
+                let offsetX = dx / 4
+                let offsetY = dy / 16
                 /*
                 let dxCoefficient = dx < 0 ? -1 : 1
                 let dyCoefficient = dy < 0 ? -1 : 1
@@ -789,13 +823,15 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
                 event.rect.x -= offsetX
                 event.rect.y -= offsetY
                 */
-                event.rect.x -= dx / 4
-                event.rect.y -= dy / 16
+                event.rect.x -= offsetX
+                event.rect.y -= offsetY
+                event.rect.styleX -= offsetX
+                event.rect.styleY -= offsetY
 
-                if (event.title == 'Smoothie maker') {
+                // if (event.title == 'Web designer') {
                     console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x} event.rect.width ${event.rect.width}`)
                     console.log(`${event.title} offsetY ${offsetY} event.rect.y ${event.rect.y} event.rect.height ${event.rect.height}`)
-                }
+                // }
             }
         })
     })
@@ -850,7 +886,23 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
 
         if (!renderedOnce) {
-            computeVectorMatrix(eventAndRefPairs, timelineRefs)
+            let oldGraph
+            let i = 0
+            while (!isEqual(graph, oldGraph)) {
+                oldGraph = deepCopy(graph)
+                // console.log(`OLD GRAPH\n${oldGraph && printGraph(oldGraph)}`)
+
+                computeVectorMatrix(eventAndRefPairs, timelineRefs)
+                applyVectors(eventAndRefPairs)
+
+                // console.log(`NEW GRAPH\n${graph && printGraph(graph)}`)
+
+                i += 1
+                if (i > 50) {
+                    break
+                }
+                console.log(`iteration #${i}`)
+            }
             setGraph(graph)
             setRenderedOnce(true)
         }
@@ -859,14 +911,14 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     const step = () => {
         console.log('step')
         if (graph) {
-            const oldGraph = uniqifyEventGraph(graph)
-            console.log(`OLD GRAPH\n${printGraph(graph)}`)
+            const oldGraph = deepCopy(graph)
+            // console.log(`OLD GRAPH\n${printGraph(graph)}`)
 
-            applyVectors(eventAndRefPairs)
             computeVectorMatrix(eventAndRefPairs, timelineRefs)
+            applyVectors(eventAndRefPairs)
 
-            graph = uniqifyEventGraph(graph)
-            console.log(`NEW GRAPH\n${printGraph(graph)}`)
+            // graph = uniqifyEventGraph(graph)
+            // console.log(`NEW GRAPH\n${printGraph(graph)}`)
             if (isEqual(graph, oldGraph)) {
                 console.log('Iteration done!')
             } else {
@@ -877,12 +929,15 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     }
 
     /*
-    const e1 = event1
-    console.log(`e1 == e1 ${e1 == e1}`)
-    console.log(`e1 === e1 ${e1 === e1}`)
-    console.log(`e1 == cloneDeep(e1) ${e1 == cloneDeep(e1)}`)
-    console.log(`e1 === cloneDeep(e1) ${e1 === cloneDeep(e1)}`)
-    console.log(`isEqual(e1,cloneDeep(e1)) ${isEqual(e1, cloneDeep(e1))}`)
+    const e1 = [event1]
+    e1[0].rect = {x: 3, y: 9, width: 11, height: 17}
+    let e2 = deepCopy(e1)
+    console.log(`isEqual(e1,deepCopy(e1)) ${isEqual(e1, e2)}`)
+    e2 = cloneDeep(e1)
+    console.log(`isEqual(e1,cloneDeep(e1)) ${isEqual(e1, e2)}`)
+    e2[0].rect!.x += 2
+    console.log(`e1.rect ${JSON.stringify(e1[0].rect)}`)
+    console.log(`e2.rect ${JSON.stringify(e2[0].rect)}`)
     */
 
     return (
@@ -906,35 +961,35 @@ function AppV2() {
     return (
         <React.Fragment>
             {/*
-            <Timeline graph={uniqifyEventGraph(singleInstanceGraph)} />
+            <Timeline graph={deepCopy(singleInstanceGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(twoInstancesGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(threeInstancesGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(mixedEventsGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(collidingInstancesGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(miniPyramidGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(collidingInstanceAndRangeGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(collidingInstanceAndRangeFlippedGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(danglingEventGraph)} />
             <hr />
             */}
-            <Timeline graph={uniqifyEventGraph(twoInstancesGraph)} />
+            <Timeline graph={deepCopy(medPyramidGraph)} />
             <hr />
             {/*
-            <Timeline graph={uniqifyEventGraph(threeInstancesGraph)} />
+            <Timeline graph={deepCopy(miniPyramidWeightedRightGraph)} />
             <hr />
-            <Timeline graph={uniqifyEventGraph(mixedEventsGraph)} />
+            <Timeline graph={deepCopy(largePyramidGraph)} />
             <hr />
-            <Timeline graph={uniqifyEventGraph(collidingInstancesGraph)} />
+            <Timeline graph={deepCopy(miniPyramidWeightedLeftGraph)} />
             <hr />
-            <Timeline graph={uniqifyEventGraph(miniPyramidGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeFlippedGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(danglingEventGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(medPyramidGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(largePyramidGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(miniPyramidWeightedLeftGraph)} />
-            <hr />
-            <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
+            <Timeline graph={deepCopy(threeColumnsGraph)} />
             <hr />
             */}
         </React.Fragment>
