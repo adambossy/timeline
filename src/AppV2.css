@@ -9,7 +9,7 @@ body {
 }
 
 .timeline-step {
-	position: fixed;
+	position: absolute;
 	bottom: 10px;
 	left: 10px;
     border: 1px solid #99f;

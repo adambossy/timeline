@@ -374,7 +374,6 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
         left: event.rect.x,
         top: event.rect.y,
     } : {}
-    console.log(`style ${JSON.stringify(style)}`)
 
     return (
         <div className={bubbleClassNames} ref={bubbleRef} style={style}>
@@ -572,17 +571,18 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
 
     eventAndRefPairs.forEach(([ event, ref ], i) => {
         vectorMatrix.push([])
-        event.vectors = vectorMatrix[i]
-        event.rect = ref.getBoundingClientRect()
-        event.rect.x = ref.offsetLeft // override
-        event.rect.y = ref.offsetTop // override
+        event.vectors = vectorMatrix[i] // reset vectors
+        if (!event.rect) {
+            event.rect = ref.getBoundingClientRect()
+            event.rect.x = ref.offsetLeft // override
+            event.rect.y = ref.offsetTop // override
+        }
     })
 
     for (let i = 0; i < eventAndRefPairs.length; i++) {
         const [ eventA, bubbleA ] = eventAndRefPairs[i]
         for (let j = i + 1; j < eventAndRefPairs.length; j++) {
             const [ eventB, bubbleB ] = eventAndRefPairs[j]
-            // TODO re-compute these exclusively based on rects
             const dx = centerX(bubbleB) - centerX(bubbleA)
             const dy = centerY(bubbleB) - centerY(bubbleA)
             if (eventA.vectors && eventB.rect) {
@@ -594,19 +594,10 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
         }
     }
 
-    /*
-    vectorMatrix.forEach((vectors, i) => {
-        const [ event, ref ] = eventAndRefPairs[i]
-        event.vectors = vectors
-
-        console.log(`i ${i} | title ${event.title} | vectors ${vectors}`)
-    })
-    */
-
     return vectorMatrix
 }
 
-const DAMPENING_FACTOR = 16 
+const DAMPENING_FACTOR = 200.0
 
 const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
     eventAndRefPairs.forEach(([ event, ref ], i) => {
@@ -614,29 +605,15 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
             const bubbleA = ref
             const [ bubbleB, dx, dy ] = vector
             if (isOverlapping(bubbleA, bubbleB) && event.rect) {
-                event.rect.x -= dx / DAMPENING_FACTOR
-                event.rect.y -= dy / DAMPENING_FACTOR
-                console.log(`newX ${event.rect.x} newY ${event.rect.y}`)
+                // console.log(`dx ${dx} dy ${dy}`)
+                event.rect.x -= DAMPENING_FACTOR / dx
+                event.rect.y -= DAMPENING_FACTOR / dy
+                // event.rect.x -= (DAMPENING_FACTOR / (dx ** 1.25)) * (dx < 0 ? -1 : 1)
+                // event.rect.y -= (DAMPENING_FACTOR / (dy ** 1.25)) * (dy < 0 ? -1 : 1)
             }
         })
     })    
 }
-
-/*
-const applyVectorMatrix = (bubbleRefs: HTMLDivElement[], vectorMatrix: Vector[][]) => {
-    for (let i = 0; i < vectorMatrix.length; i++) {
-        for (let j = i + 1; j < vectorMatrix[i].length; j++) {
-            const bubbleA = bubbleRefs[i]
-            const bubbleB = bubbleRefs[j]
-            if (isOverlapping(bubbleA, bubbleB)) {
-                const [ dx, dy ] = vectorMatrix[i][j]
-                // bubbleA.style.left = (bubbleA.clientLeft - (dx / 2)) + 'px'
-                // bubbleA.style.top = (bubbleA.clientTop - (dy / 2)) + 'px'
-            }
-        }
-    }
-}
-*/
 
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     if ((events === undefined) === (graph === undefined)) {
@@ -677,8 +654,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
 
         if (!renderedOnce) {
-            console.log("useEffect")
-
             computeVectorMatrix(eventAndRefPairs)
             setGraph(graph)
             setRenderedOnce(true)
@@ -687,17 +662,16 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
   
     const step = () => {
         console.log('step')
+
         applyVectors(eventAndRefPairs)
+        computeVectorMatrix(eventAndRefPairs)
         if (graph) {
             graph = uniqifyEventGraph(graph)
             setGraph(graph)
         }
         // TODO find a way to dynamically recompute these after they're calculated
-        // computeVectorMatrix(eventAndRefPairs)
     }
 
-    console.log(`Rendering timeline. graph=${graph} _graph=${_graph}`)
-  
     return (
         <div className="timeline">
             <BubbleRefContext.Provider value={addBubbleRef}>
@@ -738,15 +712,13 @@ function AppV2() {
             */}
             <Timeline graph={uniqifyEventGraph(medPyramidGraph)} />
             <hr/>
+            <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
+            <hr/>
             {/*}
             <Timeline graph={uniqifyEventGraph(largePyramidGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedLeftGraph)} />
             <hr/>
-            */}
-            <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
-            <hr/>
-            {/*}
             <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
             <hr/>
             */}
