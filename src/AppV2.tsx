@@ -2,6 +2,8 @@ import React, { Component, ReactNode, useCallback, useContext, useRef, useEffect
 import './AppV2.css';
 
 
+const SHOW_VECTORS = true
+
 const BranchContext = React.createContext('');
 
 type BubbleRefContextType = (event: Event, el: HTMLDivElement | null) => void;
@@ -390,14 +392,12 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
 
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
-    /* Uncomment to show vectors
-    const vectors = (event.vectors || []).map((v, i) => {
+    const vectors = SHOW_VECTORS && (event.vectors || []).map((v, i) => {
         const [ _, dx, dy ] = v
         if (event.rect) {
             return <Vector width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
         }
     })
-    */
 
     const style = event.rect ? {
         left: event.rect.x,
@@ -409,7 +409,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
             <div className="event-range-bubble-arrow"></div>
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
-            {/* {vectors} */}
+            {SHOW_VECTORS && vectors}
         </div>
     )
 }
