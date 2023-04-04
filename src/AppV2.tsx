@@ -390,12 +390,14 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
 
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
+    /* Uncomment to show vectors
     const vectors = (event.vectors || []).map((v, i) => {
         const [ _, dx, dy ] = v
         if (event.rect) {
             return <Vector width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
         }
     })
+    */
 
     const style = event.rect ? {
         left: event.rect.x,
@@ -407,7 +409,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
             <div className="event-range-bubble-arrow"></div>
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
-            {vectors}
+            {/* {vectors} */}
         </div>
     )
 }
@@ -631,7 +633,7 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
     return vectorMatrix
 }
 
-const DAMPENING_FACTOR = 200.0
+const DAMPENING_FACTOR = 50.0
 
 const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
     
@@ -650,6 +652,7 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
 
                 let offsetX
                 let offsetY
+                /*
                 let dxCoefficient = dx < 0 ? -1 : 1
                 let dyCoefficient = dy < 0 ? -1 : 1
 
@@ -657,24 +660,27 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
                     offsetX = jitter()
                 } else {
                     dx = Math.abs(dx)
-                    offsetX = (DAMPENING_FACTOR / (dx ** 1.25))
-                    offsetX = Math.min(offsetX, Math.abs(event.rect.width) / 2) * dxCoefficient
+                    offsetX = (DAMPENING_FACTOR / (Math.min(dx, 1) ** 1.25))
+                    offsetX = Math.min(offsetX, Math.abs(event.rect.width) / 4) * dxCoefficient
                 }
 
                 if (dy === 0) {
                     offsetY = jitter()
                 } else {
                     dy = Math.abs(dy)
-                    offsetY = (DAMPENING_FACTOR / (dy ** 1.25))
-                    offsetY = Math.min(offsetY, Math.abs(event.rect.height) / 2) * dyCoefficient
+                    offsetY = (DAMPENING_FACTOR / (Math.min(dy, 1) ** 1.25))
+                    offsetY = Math.min(offsetY, Math.abs(event.rect.height) / 4) * dyCoefficient
                 }
 
                 event.rect.x -= offsetX
                 event.rect.y -= offsetY
+                */
+                event.rect.x -= dx / 4
+                event.rect.y -= dy / 4
 
                 if (event.title == 'Smoothie maker') {
-                    console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x}`)
-                    console.log(`${event.title} offsetY ${offsetY} event.rect.y ${event.rect.y}`)
+                    console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x} event.rect.width ${event.rect.width}`)
+                    console.log(`${event.title} offsetY ${offsetY} event.rect.y ${event.rect.y} event.rect.height ${event.rect.height}`)
                 }
             }
         })
@@ -771,8 +777,10 @@ function AppV2() {
             {/*}
             <Timeline graph={uniqifyEventGraph(singleInstanceGraph)} />
             <hr/>
+            */}
             <Timeline graph={uniqifyEventGraph(twoInstancesGraph)} />
             <hr/>
+            {/*}
             <Timeline graph={uniqifyEventGraph(threeInstancesGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(mixedEventsGraph)} />
@@ -787,10 +795,8 @@ function AppV2() {
             <hr/>
             <Timeline graph={uniqifyEventGraph(danglingEventGraph)} />
             <hr/>
-            */}
             <Timeline graph={uniqifyEventGraph(medPyramidGraph)} />
             <hr/>
-            {/*}
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(largePyramidGraph)} />
