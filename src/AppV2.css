@@ -114,6 +114,8 @@ body {
 .event-track {
     flex: 1;
     position: relative;
+    margin: 0 auto;
+    width: 50px;
 }
 
 .event-range-bubble-arrow {

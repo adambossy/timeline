@@ -2,7 +2,7 @@ import React, { Component, ReactNode, useCallback, useContext, useRef, useEffect
 import './AppV2.css';
 
 
-const SHOW_VECTORS = true
+const SHOW_VECTORS = false
 
 const BranchContext = React.createContext('');
 
@@ -421,6 +421,8 @@ interface EventGroupProps {
 const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     const context = useContext(BranchContext);
 
+    // TODO this should probably be moved to EventTrack, which is the most
+    // pervasive element in the timeline and therefore we could do it once with just that element
     const groupRef = useRef<HTMLDivElement | null>(null);
     const addTimelineRef = useContext(TimelineRefContext);
   
@@ -620,6 +622,7 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
             }
         }
 
+        // TODO should probably merge all these vectors into a single one
         for (let j = 0; j < timelineRefs.length; j++) {
             const timelineRef = timelineRefs[j]
             const dx = centerX(timelineRef) - centerX(bubbleA)
@@ -774,13 +777,10 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 function AppV2() {
     return (
         <React.Fragment>
-            {/*}
             <Timeline graph={uniqifyEventGraph(singleInstanceGraph)} />
             <hr/>
-            */}
             <Timeline graph={uniqifyEventGraph(twoInstancesGraph)} />
             <hr/>
-            {/*}
             <Timeline graph={uniqifyEventGraph(threeInstancesGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(mixedEventsGraph)} />
@@ -805,7 +805,6 @@ function AppV2() {
             <hr/>
             <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
             <hr/>
-            */}
         </React.Fragment>
     )
 }
