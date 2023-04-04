@@ -8,6 +8,16 @@ body {
     margin: 16px auto 0;
 }
 
+.timeline-step {
+	position: fixed;
+	bottom: 10px;
+	left: 10px;
+    border: 1px solid #99f;
+    padding: 10px 30px;
+    z-index: 1;
+    background-color: #99f;
+}
+
 :root {
     --default-timeline-stem: 8px;
 }

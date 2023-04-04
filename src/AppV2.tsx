@@ -9,6 +9,7 @@ const BubbleRefContext = React.createContext<BubbleRefContextType>(() => {});
 
 
 type Vector = [
+    otherRef: HTMLDivElement,
     dx: number,
     dy: number,
 ];
@@ -363,14 +364,20 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
     const vectors = (event.vectors || []).map((v, i) => {
-        const [ dx, dy ] = v
+        const [ _, dx, dy ] = v
         if (event.rect) {
             return <Vector width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
         }
     })
 
+    const style = event.rect ? {
+        left: event.rect.x,
+        top: event.rect.y,
+    } : {}
+    console.log(`style ${JSON.stringify(style)}`)
+
     return (
-        <div className={bubbleClassNames} ref={bubbleRef}>
+        <div className={bubbleClassNames} ref={bubbleRef} style={style}>
             <div className="event-range-bubble-arrow"></div>
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
@@ -563,34 +570,59 @@ const centerY = (bubble: HTMLDivElement) => {
 const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
     let vectorMatrix: Vector[][] = []
 
-    eventAndRefPairs.forEach(() => {
+    eventAndRefPairs.forEach(([ event, ref ], i) => {
         vectorMatrix.push([])
+        event.vectors = vectorMatrix[i]
+        event.rect = ref.getBoundingClientRect()
+        event.rect.x = ref.offsetLeft // override
+        event.rect.y = ref.offsetTop // override
     })
 
     for (let i = 0; i < eventAndRefPairs.length; i++) {
-        const bubbleA = eventAndRefPairs[i][1]
+        const [ eventA, bubbleA ] = eventAndRefPairs[i]
         for (let j = i + 1; j < eventAndRefPairs.length; j++) {
-            const bubbleB = eventAndRefPairs[j][1]
+            const [ eventB, bubbleB ] = eventAndRefPairs[j]
+            // TODO re-compute these exclusively based on rects
             const dx = centerX(bubbleB) - centerX(bubbleA)
             const dy = centerY(bubbleB) - centerY(bubbleA)
-            const vectorsA = vectorMatrix[i]
-            vectorsA.push([dx, dy])
-            const vectorsB = vectorMatrix[j]
-            vectorsB.push([-dx, -dy])
+            if (eventA.vectors && eventB.rect) {
+                eventA.vectors.push([ bubbleB, dx, dy ])
+            }
+            if (eventB.vectors && eventA.rect) {
+                eventB.vectors.push([ bubbleA, -dx, -dy ])
+            }
         }
     }
 
+    /*
     vectorMatrix.forEach((vectors, i) => {
         const [ event, ref ] = eventAndRefPairs[i]
-        event.rect = ref.getBoundingClientRect();
         event.vectors = vectors
 
         console.log(`i ${i} | title ${event.title} | vectors ${vectors}`)
     })
+    */
 
     return vectorMatrix
 }
 
+const DAMPENING_FACTOR = 16 
+
+const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
+    eventAndRefPairs.forEach(([ event, ref ], i) => {
+        (event.vectors || []).forEach((vector, i) => {
+            const bubbleA = ref
+            const [ bubbleB, dx, dy ] = vector
+            if (isOverlapping(bubbleA, bubbleB) && event.rect) {
+                event.rect.x -= dx / DAMPENING_FACTOR
+                event.rect.y -= dy / DAMPENING_FACTOR
+                console.log(`newX ${event.rect.x} newY ${event.rect.y}`)
+            }
+        })
+    })    
+}
+
+/*
 const applyVectorMatrix = (bubbleRefs: HTMLDivElement[], vectorMatrix: Vector[][]) => {
     for (let i = 0; i < vectorMatrix.length; i++) {
         for (let j = i + 1; j < vectorMatrix[i].length; j++) {
@@ -604,6 +636,7 @@ const applyVectorMatrix = (bubbleRefs: HTMLDivElement[], vectorMatrix: Vector[][
         }
     }
 }
+*/
 
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     if ((events === undefined) === (graph === undefined)) {
@@ -646,14 +679,23 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         if (!renderedOnce) {
             console.log("useEffect")
 
-            const vectorMatrix = computeVectorMatrix(eventAndRefPairs)
-            // applyVectorMatrix(bubbleRefs, vectorMatrix)
+            computeVectorMatrix(eventAndRefPairs)
             setGraph(graph)
-            // forceRefresh()
             setRenderedOnce(true)
         }
     })
   
+    const step = () => {
+        console.log('step')
+        applyVectors(eventAndRefPairs)
+        if (graph) {
+            graph = uniqifyEventGraph(graph)
+            setGraph(graph)
+        }
+        // TODO find a way to dynamically recompute these after they're calculated
+        // computeVectorMatrix(eventAndRefPairs)
+    }
+
     console.log(`Rendering timeline. graph=${graph} _graph=${_graph}`)
   
     return (
@@ -664,6 +706,9 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
                     graph && <EventGraphComponent graph={graph} />
                 }
             </BubbleRefContext.Provider>
+            <button className="timeline-step" onClick={step}>
+                Step
+            </button>
         </div>
     )
 }
@@ -682,24 +727,26 @@ function AppV2() {
             <hr/>
             <Timeline graph={uniqifyEventGraph(collidingInstancesGraph)} />
             <hr/>
-            */}
             <Timeline graph={uniqifyEventGraph(miniPyramidGraph)} />
             <hr/>
-            {/*}
             <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeFlippedGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(danglingEventGraph)} />
             <hr/>
+            */}
             <Timeline graph={uniqifyEventGraph(medPyramidGraph)} />
             <hr/>
+            {/*}
             <Timeline graph={uniqifyEventGraph(largePyramidGraph)} />
             <hr/>
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedLeftGraph)} />
             <hr/>
+            */}
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
             <hr/>
+            {/*}
             <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
             <hr/>
             */}
