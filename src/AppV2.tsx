@@ -7,10 +7,10 @@ const SHOW_VECTORS = false
 const BranchContext = React.createContext('');
 
 type BubbleRefContextType = (event: Event, el: HTMLDivElement | null) => void;
-const BubbleRefContext = React.createContext<BubbleRefContextType>(() => {});
+const BubbleRefContext = React.createContext<BubbleRefContextType>(() => { });
 
 type TimelineRefContextType = (el: HTMLDivElement | null) => void;
-const TimelineRefContext = React.createContext<TimelineRefContextType>(() => {});
+const TimelineRefContext = React.createContext<TimelineRefContextType>(() => { });
 
 
 type Vector = [
@@ -133,12 +133,12 @@ const collidingInstances: Event[] = [
 ]
 
 const collidingInstancesGraph: EventGraph = [
-    group1 
+    group1
 ]
 
 const miniPyramidGraph: EventGraph = [
     event3,
-    group1 
+    group1
 ]
 
 const nestedGroup1: EventGroup = [
@@ -167,7 +167,7 @@ const nestedGroup1: EventGroup = [
 ]
 
 const medPyramidGraph: EventGraph = [
-    nestedGroup1 
+    nestedGroup1
 ]
 
 const nestedGroup2: EventGroup = [
@@ -290,13 +290,13 @@ const formatDate = (date?: Date): string | undefined => {
     }
 
     const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
-  
+
     const monthIndex = date.getMonth();
     const year = date.getFullYear();
-  
+
     return `${monthNames[monthIndex]} ${year}`;
 }
 
@@ -332,8 +332,8 @@ class EventInstance extends React.Component<EventInstanceProps> {
         super(props)
     }
 
-    render () {
-        const { event, rectOverride } = this.props 
+    render() {
+        const { event, rectOverride } = this.props
         return (
             <div className="event-instance">
                 <EventBubble event={event} bubbleSide={this.context} rectOverride={rectOverride} />
@@ -381,7 +381,7 @@ interface EventBubbleProps {
 const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
-  
+
     useEffect(() => {
         addBubbleRef(event, bubbleRef.current);
     }, [addBubbleRef]);
@@ -393,7 +393,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
     const vectors = SHOW_VECTORS && (event.vectors || []).map((v, i) => {
-        const [ _, dx, dy ] = v
+        const [_, dx, dy] = v
         if (event.rect) {
             return <Vector width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
         }
@@ -425,7 +425,7 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     // pervasive element in the timeline and therefore we could do it once with just that element
     const groupRef = useRef<HTMLDivElement | null>(null);
     const addTimelineRef = useContext(TimelineRefContext);
-  
+
     useEffect(() => {
         addTimelineRef(groupRef.current);
     }, [addTimelineRef]);
@@ -446,16 +446,16 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     return (
         <div className="event-group">
             <div className="event-sequence-container" ref={groupRef}>
-            {
-                sequences.map((sequence, i) => {
-                    const currentContext = context ? context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
-                    return (
-                        <BranchContext.Provider value={currentContext}>
-                            <div className="event-sequence">{sequence}</div>
-                        </BranchContext.Provider>
-                    )
-                })
-            }
+                {
+                    sequences.map((sequence, i) => {
+                        const currentContext = context ? context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
+                        return (
+                            <BranchContext.Provider value={currentContext}>
+                                <div className="event-sequence">{sequence}</div>
+                            </BranchContext.Provider>
+                        )
+                    })
+                }
             </div>
         </div>
     )
@@ -464,20 +464,19 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
 const buildGraph = (sortedEvents: Event[]) => {
     let graph = [[sortedEvents[0]]];
 
-/*
-    let active = 0;
-    for (let i = 1; i < sortedEvents.length; i++) {
-        const e1 = sortedEvents[i];
-        for (let j = 1; j < sortedEvents.length; j++) {
-            let index = j + active % sortedEvents.length;
-            const e2 = graph[index];
-            if (!projectionOverlaps(e1.startDate || e1.date, e1.endDate || e1.date, e2.startDate || e2.date, e2.endDate || e2.date) {
-                
-                active = index
+    /*
+        let active = 0;
+        for (let i = 1; i < sortedEvents.length; i++) {
+            const e1 = sortedEvents[i];
+            for (let j = 1; j < sortedEvents.length; j++) {
+                let index = j + active % sortedEvents.length;
+                const e2 = graph[index];
+                if (!projectionOverlaps(e1.startDate || e1.date, e1.endDate || e1.date, e2.startDate || e2.date, e2.endDate || e2.date) {
+                    active = index
+                }
             }
         }
-    }
-*/
+    */
     return graph;
 }
 
@@ -512,7 +511,7 @@ const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
             const event = eventOrGroup as Event
             track.push({ ...event })
         } else {
-            if (track.length > 0) { 
+            if (track.length > 0) {
                 nodes.push(...track)
                 track = []
             }
@@ -523,11 +522,11 @@ const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
         }
     }
 
-    if (track.length > 0) { 
+    if (track.length > 0) {
         nodes.push(...track)
     }
 
-    return nodes 
+    return nodes
 }
 
 const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverrides }) => {
@@ -547,7 +546,7 @@ const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverri
         } else {
             // End track if group is found
             // TODO consider baking this into the data structure
-            if (track.length > 0) { 
+            if (track.length > 0) {
                 nodes.push(<EventTrack>{track}</EventTrack>)
                 track = []
             }
@@ -558,7 +557,7 @@ const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverri
         }
     }
 
-    if (track.length > 0) { 
+    if (track.length > 0) {
         nodes.push(<EventTrack>{track}</EventTrack>)
     }
 
@@ -598,7 +597,7 @@ const centerY = (bubble: HTMLDivElement) => {
 const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timelineRefs: HTMLDivElement[]) => {
     let vectorMatrix: Vector[][] = []
 
-    eventAndRefPairs.forEach(([ event, ref ], i) => {
+    eventAndRefPairs.forEach(([event, ref], i) => {
         vectorMatrix.push([])
         event.vectors = vectorMatrix[i] // reset vectors
         if (!event.rect) {
@@ -609,16 +608,16 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
     })
 
     for (let i = 0; i < eventAndRefPairs.length; i++) {
-        const [ eventA, bubbleA ] = eventAndRefPairs[i]
+        const [eventA, bubbleA] = eventAndRefPairs[i]
         for (let j = i + 1; j < eventAndRefPairs.length; j++) {
-            const [ eventB, bubbleB ] = eventAndRefPairs[j]
+            const [eventB, bubbleB] = eventAndRefPairs[j]
             const dx = centerX(bubbleB) - centerX(bubbleA)
             const dy = centerY(bubbleB) - centerY(bubbleA)
             if (eventA.vectors && eventB.rect) {
-                eventA.vectors.push([ bubbleB, dx, dy ])
+                eventA.vectors.push([bubbleB, dx, dy])
             }
             if (eventB.vectors && eventA.rect) {
-                eventB.vectors.push([ bubbleA, -dx, -dy ])
+                eventB.vectors.push([bubbleA, -dx, -dy])
             }
         }
 
@@ -628,7 +627,7 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
             const dx = centerX(timelineRef) - centerX(bubbleA)
             const dy = centerY(timelineRef) - centerY(bubbleA)
             if (eventA.vectors) {
-                eventA.vectors.push([ timelineRef, dx, dy ])
+                eventA.vectors.push([timelineRef, dx, dy])
             }
         }
     }
@@ -639,15 +638,15 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
 const DAMPENING_FACTOR = 50.0
 
 const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
-    
+
     const jitter = () => {
         return (Math.random() * 4) - 2
     }
 
-    eventAndRefPairs.forEach(([ event, ref ], i) => {
+    eventAndRefPairs.forEach(([event, ref], i) => {
         (event.vectors || []).forEach((vector, i) => {
             const bubbleA = ref
-            let [ bubbleB, dx, dy ] = vector
+            let [bubbleB, dx, dy] = vector
             if (isOverlapping(bubbleA, bubbleB) && event.rect) {
                 if (event.title == 'Smoothie maker') {
                     console.log(`x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
@@ -687,7 +686,7 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
                 }
             }
         })
-    })    
+    })
     console.log(`---------END ITERATION-----------`)
 }
 
@@ -704,7 +703,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             if (aDate && bDate) {
                 return aDate.getTime() - bDate.getTime();
             }
-            
+
             return 0;
         });
 
@@ -716,7 +715,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 
     const addBubbleRef = useCallback((event: Event, el: HTMLDivElement | null) => {
         if (el) {
-            setBubbleRefs((prevRefs) => [...prevRefs, [ event, el ]]);
+            setBubbleRefs((prevRefs) => [...prevRefs, [event, el]]);
         }
     }, []);
 
@@ -729,8 +728,8 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
     }, []);
 
-    const [ _graph, setGraph ] = useState<EventGraph>();
-    const [ renderedOnce, setRenderedOnce ] = useState(false)
+    const [_graph, setGraph] = useState<EventGraph>();
+    const [renderedOnce, setRenderedOnce] = useState(false)
 
     useEffect(() => {
         // useEffect seemed to get called twice per Timeline, and ignore the first, premature call
@@ -744,7 +743,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             setRenderedOnce(true)
         }
     })
-  
+
     const step = () => {
         console.log('step')
 
@@ -778,33 +777,33 @@ function AppV2() {
     return (
         <React.Fragment>
             <Timeline graph={uniqifyEventGraph(singleInstanceGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(twoInstancesGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(threeInstancesGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(mixedEventsGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(collidingInstancesGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(miniPyramidGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(collidingInstanceAndRangeFlippedGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(danglingEventGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(medPyramidGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedRightGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(largePyramidGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(miniPyramidWeightedLeftGraph)} />
-            <hr/>
+            <hr />
             <Timeline graph={uniqifyEventGraph(threeColumnsGraph)} />
-            <hr/>
+            <hr />
         </React.Fragment>
     )
 }
