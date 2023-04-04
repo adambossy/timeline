@@ -121,7 +121,7 @@ body {
 }
 
 .right .event-range-bubble-arrow {
-    left: -17px;
+    left: -16px;
     border-right: 7px solid #336699;
     top: calc(50% - 7px);
 }
@@ -205,3 +205,29 @@ body {
 }
 
 /* End horizontal branch stems for groups */
+
+.vector {
+	width: 920px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+    /*display: none;*/
+}
+
+.vector-stem {
+	margin-top: 4px; /* .point border-top-width + .point border-bottom-width / 2 */
+	margin-left: 460px; /* .arrow width / 2 */
+    width: 444px; /* .arrow width / 2 - .point border-left-width */
+	background: blue;
+	height: 2px;
+	float: left;
+}
+
+.vector-point {
+	width: 0;
+	height: 0;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent; /* border-top width */
+	border-left: 16px solid blue;
+	float: right;
+}
