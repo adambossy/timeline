@@ -124,6 +124,7 @@ body {
     position: absolute;
     height: 0;
     width: 0;
+    display: none;
 }
 
 .left .event-range-bubble-arrow {
@@ -242,4 +243,43 @@ body {
 	border-bottom: 5px solid transparent; /* border-top width */
 	border-left: 16px solid blue;
 	float: right;
+}
+
+.line-container { /* debugging */
+    width: 100px;
+}
+
+.line { /* debugging */
+    margin-left: 50px;
+    width: 50px;
+}
+
+.line-container { /* debugging */
+    transform: rotate(0deg);
+}
+
+.right .line-container { /* debugging */
+    transform: rotate(180deg);
+}
+
+.line-container {
+	position: absolute;
+    content: '';
+    top: calc(50% - 1px),
+}
+
+.left .line-container {
+    left: 128px;
+    top: calc(50% - 1px);
+}
+
+.right .line-container {
+    left: -53px;
+    top: calc(50% - 1px);
+}
+
+.line {
+	background: lightgray;
+	height: 2px;
+	float: left;
 }

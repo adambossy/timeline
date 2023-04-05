@@ -335,7 +335,6 @@ enum BubbleSide {
 interface EventRangeProps {
     event: Event,
     height: number;
-    rectOverride?: Rect;
 }
 
 const formatDate = (date?: Date): string | undefined => {
@@ -361,13 +360,14 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' ' + endDate : ''))
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ event, height, rectOverride }) => {
+const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
     const branchContext = useContext(BranchContext);
+    const eventRef = useRef(null)
 
     return (
         <React.Fragment>
             <div className="event-range" style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={branchContext} rectOverride={rectOverride} />
+                <EventBubble event={event} bubbleSide={branchContext} instanceRect={null} ref={eventRef} />
             </div>
         </React.Fragment>
     );
@@ -375,26 +375,29 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height, rectOverride }) 
 
 interface EventInstanceProps {
     event: Event,
-    rectOverride?: Rect;
 }
 
-class EventInstance extends React.Component<EventInstanceProps> {
+const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
+    const context = useContext(BranchContext);
+    const eventRef = useRef<HTMLDivElement | null>(null)
+    const [rect, setRect] = useState<DOMRect | null>(null)
 
-    static contextType = BranchContext
-
-    constructor(props: EventInstanceProps) {
-        super(props)
-    }
-
-    render() {
-        const { event, rectOverride } = this.props
-        return (
-            <div className="event-instance">
-                <EventBubble event={event} bubbleSide={this.context} rectOverride={rectOverride} />
-            </div>
-        )
-    }
+    useEffect(() => {
+        if (eventRef.current) {
+            const _rect = eventRef.current.getBoundingClientRect()
+            if (_rect) {
+                setRect(_rect) //  ?? null) // TODO evaluate whether this is the best state to change to force re-render
+            }
+        }
+    }, [eventRef])
+  
+    return (
+        <div className="event-instance" ref={eventRef}>
+            <EventBubble event={event} bubbleSide={context} instanceRect={rect} ref={eventRef} />
+        </div>
+    )
 }
+
 
 interface VectorProps {
     width: number;
@@ -426,19 +429,86 @@ const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
     )
 }
 
-interface EventBubbleProps {
-    event: Event;
-    bubbleSide: BubbleSide | unknown;
-    rectOverride?: Rect;
+interface LineProps {
+    xA: number,
+    yA: number,
+    xB: number,
+    yB: number,
+    bubbleRect?: Rect,
+    instanceRect: DOMRect | null, // TODO change to ? and remove null - need to propagate this up the component tree
+    bubbleSide: BubbleSide | unknown,
 }
 
-const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
+// const Line: React.FC<LineProps> = ({ xA, yA, xB, yB}) => {
+//const Line: React.FC<LineProps> = React.forwardRef((props, bubbleRef) => {
+const Line: React.FC<LineProps> = ((props) => {
+    let { xA, yA, xB, yB, bubbleRect, instanceRect, bubbleSide } = props;
+
+    const dx = xB - xA
+    const dy = yB - yA
+
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI
+    const length = Math.sqrt(dx * dx + dy * dy)
+
+    console.log(`line xA ${xA} -xB ${xB} = dx ${dx} | yA ${yA} -yB ${yB} = dy ${dy} | angle ${angle} | length ${length}`)
+
+    const lineContainerStyle = {
+        left: bubbleSide === BubbleSide.LEFT ? `calc(100% + 4px - ${length}px)` : `calc(-${length}px - 4px)`, // 4px = border width
+        width: length * 2 + "px",
+        Transform: "rotate(" + Math.round(angle) + "deg)",
+        WebkitTransform: "rotate(" + Math.round(angle) + "deg)"
+    }
+    const lineStyle = {
+        marginLeft: length + "px",
+        width: length + "px" // MAGIC NUMBER ALERT .point border-left-width
+    }
+    
+    return (
+        <div className="line-container" style={lineContainerStyle} /*ref={el => vectorRefs[j] = el}*/>
+            <div className="line" style={lineStyle}></div>
+        </div>
+    )
+})
+
+interface EventBubbleProps {
+    event: Event,
+    bubbleSide: BubbleSide | unknown, // FIXME this should never be unknown
+    instanceRect: DOMRect | null,
+}
+
+interface LineOrigin {
+    x: number,
+    y: number,
+}
+
+const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event, bubbleSide, instanceRect }, ref) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
+    // const [lineOrigin, setLineOrigin] = useState<LineOrigin | null>(null)
 
     useEffect(() => {
         addBubbleRef(event, bubbleRef.current);
     }, [addBubbleRef]);
+
+    useEffect(() => { // TODO delete this use of useEffect
+        console.log(`bubbleRef ${bubbleRef && bubbleRef.current}`)
+        /*
+        if (bubbleRef.current) {
+            const rect = bubbleRef.current.getBoundingClientRect()
+            if (bubbleSide === BubbleSide.LEFT) {
+                setLineOrigin({
+                    x: rect.right,
+                    y: rect.y + (rect.height / 2),
+                })
+            } else {
+                setLineOrigin({
+                    x: rect.left,
+                    y: rect.y + (rect.height / 2),
+                })
+            }
+        }
+        */
+    }, [bubbleRef]);
 
     if (!bubbleSide) {
         bubbleSide = BubbleSide.LEFT;
@@ -458,15 +528,36 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide }) => {
         top: event.rect.styleY,
     } : {}
 
+    console.log(`event.rect ${event && JSON.stringify(event.rect)}`)
+    console.log(`instanceRect ${instanceRect && JSON.stringify(instanceRect)}`)
+
+    let lineOrigin
+    if (event.rect) {
+        if (bubbleSide === BubbleSide.LEFT) {
+            lineOrigin = {
+                x: event.rect.x + event.rect.width,
+                y: event.rect.y + (event.rect.height / 2),
+            }
+        } else {
+            lineOrigin = {
+                x: event.rect.x,
+                y: event.rect.y + (event.rect.height / 2),
+            }
+        }
+    }
+
     return (
         <div className={bubbleClassNames} ref={bubbleRef} style={style}>
             <div className="event-range-bubble-arrow"></div>
+            {
+                instanceRect && lineOrigin && <Line xA={lineOrigin.x} yA={lineOrigin.y} xB={instanceRect.x + (instanceRect.width / 2)} yB={instanceRect.y + (instanceRect.height / 2)} bubbleRect={event.rect} instanceRect={instanceRect} bubbleSide={bubbleSide} />
+            }
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
             {SHOW_VECTORS && vectors}
         </div>
     )
-}
+})
 
 interface EventGroupProps {
     group: EventGroup;
@@ -759,10 +850,6 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
                 const dy = centerY(eventB.rect) - centerY(eventA.rect)
                 eventA.vectors.push([eventB.rect, dx, dy])
                 eventB.vectors.push([eventA.rect, -dx, -dy])
-                // console.log(`eventA ${eventA.title} dx ${dx} dy ${dy}`)
-                // console.log(`eventB ${eventB.title} -dx ${-dx} -dy ${-dy}`)
-                // console.log(`refA.getBoundingClientRect ${JSON.stringify(refA.getBoundingClientRect())}`)
-                // console.log(`refB.getBoundingClientRect ${JSON.stringify(refB.getBoundingClientRect())}`)
             }
         }
 
@@ -795,7 +882,7 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
             let [otherRect, dx, dy] = vector
             if (event.rect && isOverlapping(event.rect, otherRect)) {
                 // if (event.title == 'Student') {
-                    console.log(`${event.title} x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
+                    //console.log(`${event.title} x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
                 // }
 
                 let offsetX = dx / 4
@@ -829,13 +916,14 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
                 event.rect.styleY -= offsetY
 
                 // if (event.title == 'Web designer') {
+                    /*
                     console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x} event.rect.width ${event.rect.width}`)
                     console.log(`${event.title} offsetY ${offsetY} event.rect.y ${event.rect.y} event.rect.height ${event.rect.height}`)
+                    */
                 // }
             }
         })
     })
-    console.log(`---------END ITERATION-----------`)
 }
 
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
@@ -969,6 +1057,7 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(mixedEventsGraph)} />
             <hr />
+            */}
             <Timeline graph={deepCopy(collidingInstancesGraph)} />
             <hr />
             <Timeline graph={deepCopy(miniPyramidGraph)} />
@@ -979,10 +1068,8 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(danglingEventGraph)} />
             <hr />
-            */}
             <Timeline graph={deepCopy(medPyramidGraph)} />
             <hr />
-            {/*
             <Timeline graph={deepCopy(miniPyramidWeightedRightGraph)} />
             <hr />
             <Timeline graph={deepCopy(largePyramidGraph)} />
@@ -991,6 +1078,7 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(threeColumnsGraph)} />
             <hr />
+            {/*
             */}
         </React.Fragment>
     )
