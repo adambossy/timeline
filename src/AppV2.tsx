@@ -362,12 +362,22 @@ const formatDateRange = (event: Event): string | undefined => {
 
 const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
     const branchContext = useContext(BranchContext);
-    const eventRef = useRef(null)
+    const eventRef = useRef<HTMLDivElement | null>(null)
+    const [rect, setRect] = useState<DOMRect | null>(null)
+
+    useEffect(() => {
+        if (eventRef.current) {
+            const _rect = eventRef.current.getBoundingClientRect()
+            if (_rect) {
+                setRect(_rect) //  ?? null) // TODO evaluate whether this is the best state to change to force re-render
+            }
+        }
+    }, [eventRef])
 
     return (
         <React.Fragment>
-            <div className="event-range" style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={branchContext} instanceRect={null} ref={eventRef} />
+            <div className="event-range" ref={eventRef} style={{ height: height + "px" }}>
+                <EventBubble event={event} bubbleSide={branchContext} instanceRect={rect} ref={eventRef} />
             </div>
         </React.Fragment>
     );
