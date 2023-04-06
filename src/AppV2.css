@@ -27,7 +27,8 @@ body {
     flex-direction: column;
     flex-basis: auto;
     position: relative;
-    margin-bottom: 16px;
+    width: fit-content;
+    margin: 0 auto 16px;
 }
 
 .event-sequence-container {
