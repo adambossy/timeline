@@ -438,7 +438,6 @@ const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
 interface LineProps {
     bubbleRect: Rect,
     instanceRect: DOMRect, // TODO change to ? and remove null - need to propagate this up the component tree
-    bubbleSide: BubbleSide
 }
 
 const Line: React.FC<LineProps> = ((props) => {
@@ -450,18 +449,8 @@ const Line: React.FC<LineProps> = ((props) => {
     const branchContext = useContext(BranchContext);
     let bubbleSide = branchContext ? branchContext as BubbleSide : BubbleSide.LEFT
 
-    const lineOrigin = (bubbleSide === BubbleSide.LEFT) ?
-        {
-            x: bubbleRect.x + bubbleRect.width,
-            y: bubbleRect.y + (bubbleRect.height / 2),
-        } :
-        {
-            x: bubbleRect.x,
-            y: bubbleRect.y + (bubbleRect.height / 2),
-        }
-
-    const xA = lineOrigin.x
-    const yA = lineOrigin.y
+    const xA = bubbleRect.x + ((bubbleSide === BubbleSide.LEFT) ? bubbleRect.width : 0)
+    const yA = bubbleRect.y + (bubbleRect.height / 2)
     const xB = instanceRect.x + (instanceRect.width / 2)
     const yB = instanceRect.y + (instanceRect.height / 2)
 
@@ -472,14 +461,16 @@ const Line: React.FC<LineProps> = ((props) => {
     const length = Math.sqrt(dx * dx + dy * dy)
 
     const lineContainerStyle = {
-        left: bubbleSide === BubbleSide.LEFT ? `calc(100% + 4px - ${length}px)` : `calc(-${length}px - 4px)`, // 4px = border width
-        width: length * 2 + "px",
-        Transform: "rotate(" + Math.round(angle) + "deg)",
-        WebkitTransform: "rotate(" + Math.round(angle) + "deg)"
+        left: bubbleSide === BubbleSide.LEFT
+            ? `calc(100% + 4px - ${length}px)`
+            : `calc(-${length}px - 4px)`, 
+        width: `${length * 2}px`,
+        Transform: `rotate(${Math.round(angle)}deg)`,
+        WebkitTransform: `rotate(${Math.round(angle)}deg)`
     }
     const lineStyle = {
-        marginLeft: length + "px",
-        width: length + "px"
+        marginLeft: `${length}px`,
+        width: `${length}px`
     }
     
     return (
