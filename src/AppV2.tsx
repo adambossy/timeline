@@ -327,6 +327,34 @@ const threeColumnsGraph: EventGraph = [
     ]
 ]
 
+const adamsGraph: EventGraph = [
+    {
+        title: "Founder",
+        startDate: new Date("2013-01-01"),
+        endDate: new Date("2016-03-01"),
+    },
+    {
+        title: "Senior Engineering Manager",
+        startDate: new Date("2019-01-01"),
+        endDate: new Date("2022-10-01"),
+    },
+    {
+        title: "Engineering Manager",
+        startDate: new Date("2016-01-01"),
+        endDate: new Date("2018-11-01"),
+    },
+    {
+        title: "Student",
+        startDate: new Date("2016-08-01"),
+        endDate: new Date("2015-12-01"),
+    },
+    {
+        title: "Member of Technical Staff",
+        startDate: new Date("2011-02-01"),
+        endDate: new Date("2014-18-01"),
+    }
+]
+
 enum BubbleSide {
     RIGHT = 'right',
     LEFT = 'left',
@@ -357,7 +385,7 @@ const formatDateRange = (event: Event): string | undefined => {
     const date_ = formatDate(event.date)
     const startDate = formatDate(event.startDate)
     const endDate = formatDate(event.endDate)
-    return date_ || (startDate + (endDate ? ' ' + endDate : ''))
+    return date_ || (startDate + (endDate ? ' - ' + endDate : ''))
 }
 
 const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
@@ -850,6 +878,9 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 function AppV2() {
     return (
         <React.Fragment>
+            {/*
+            <Timeline graph={deepCopy(singleInstanceGraph)} />
+            <hr />
             <Timeline graph={deepCopy(singleInstanceGraph)} />
             <hr />
             <Timeline graph={deepCopy(twoInstancesGraph)} />
@@ -877,6 +908,9 @@ function AppV2() {
             <Timeline graph={deepCopy(miniPyramidWeightedLeftGraph)} />
             <hr />
             <Timeline graph={deepCopy(threeColumnsGraph)} />
+            <hr />
+            */}
+            <Timeline graph={deepCopy(adamsGraph)} />
             <hr />
         </React.Fragment>
     )
