@@ -1,5 +1,5 @@
-import React, { Component, ReactNode, useCallback, useContext, useRef, useEffect, useState } from 'react';
 import { cloneDeep, isEqual } from 'lodash';
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './AppV2.css';
 
 
@@ -60,7 +60,7 @@ const TimelineRefContext = React.createContext<TimelineRefContextType>(() => { }
 
 
 type Vector = [
-    other: Rect, // otherRef: HTMLDivElement,
+    other: Rect,
     dx: number,
     dy: number,
 ];
@@ -369,7 +369,7 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
         if (eventRef.current) {
             const _rect = eventRef.current.getBoundingClientRect()
             if (_rect) {
-                setRect(_rect) //  ?? null) // TODO evaluate whether this is the best state to change to force re-render
+                setRect(_rect) // TODO evaluate whether this is the best state to change to force re-render
             }
         }
     }, [eventRef])
@@ -396,7 +396,7 @@ const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
         if (eventRef.current) {
             const _rect = eventRef.current.getBoundingClientRect()
             if (_rect) {
-                setRect(_rect) //  ?? null) // TODO evaluate whether this is the best state to change to force re-render
+                setRect(_rect) // TODO evaluate whether this is the best state to change to force re-render
             }
         }
     }, [eventRef])
@@ -432,7 +432,7 @@ const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
         width: Math.max(0, length / 2 - 16) + "px" // MAGIC NUMBER ALERT .point border-left-width
     }
     return (
-        <div className="Vector" style={vectorStyle} /*ref={el => vectorRefs[j] = el}*/>
+        <div className="Vector" style={vectorStyle}>
             <div className="Vector-stem" style={lineStyle}></div>
             <div className="Vector-point"></div>
         </div>
@@ -449,10 +449,8 @@ interface LineProps {
     bubbleSide: BubbleSide | unknown,
 }
 
-// const Line: React.FC<LineProps> = ({ xA, yA, xB, yB}) => {
-//const Line: React.FC<LineProps> = React.forwardRef((props, bubbleRef) => {
 const Line: React.FC<LineProps> = ((props) => {
-    let { xA, yA, xB, yB, bubbleRect, instanceRect, bubbleSide } = props;
+    let { xA, yA, xB, yB, bubbleSide } = props;
 
     const dx = xB - xA
     const dy = yB - yA
@@ -470,11 +468,11 @@ const Line: React.FC<LineProps> = ((props) => {
     }
     const lineStyle = {
         marginLeft: length + "px",
-        width: length + "px" // MAGIC NUMBER ALERT .point border-left-width
+        width: length + "px"
     }
     
     return (
-        <div className="line-container" style={lineContainerStyle} /*ref={el => vectorRefs[j] = el}*/>
+        <div className="line-container" style={lineContainerStyle}>
             <div className="line" style={lineStyle}></div>
         </div>
     )
@@ -486,15 +484,9 @@ interface EventBubbleProps {
     instanceRect: DOMRect | null,
 }
 
-interface LineOrigin {
-    x: number,
-    y: number,
-}
-
-const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event, bubbleSide, instanceRect }, ref) => {
+const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event, bubbleSide, instanceRect }) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
-    // const [lineOrigin, setLineOrigin] = useState<LineOrigin | null>(null)
 
     useEffect(() => {
         addBubbleRef(event, bubbleRef.current);
@@ -502,22 +494,6 @@ const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event,
 
     useEffect(() => { // TODO delete this use of useEffect
         console.log(`bubbleRef ${bubbleRef && bubbleRef.current}`)
-        /*
-        if (bubbleRef.current) {
-            const rect = bubbleRef.current.getBoundingClientRect()
-            if (bubbleSide === BubbleSide.LEFT) {
-                setLineOrigin({
-                    x: rect.right,
-                    y: rect.y + (rect.height / 2),
-                })
-            } else {
-                setLineOrigin({
-                    x: rect.left,
-                    y: rect.y + (rect.height / 2),
-                })
-            }
-        }
-        */
     }, [bubbleRef]);
 
     if (!bubbleSide) {
@@ -594,10 +570,6 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
         return i < (length / 2)
     }
 
-    const isRightBranch = (i: number, length: number): boolean => {
-        return !isLeftBranch(i, length)
-    }
-
     return (
         <div className="event-group">
             <div className="event-sequence-container" ref={groupRef}>
@@ -614,25 +586,6 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
             </div>
         </div>
     )
-}
-
-const buildGraph = (sortedEvents: Event[]) => {
-    let graph = [[sortedEvents[0]]];
-
-    /*
-        let active = 0;
-        for (let i = 1; i < sortedEvents.length; i++) {
-            const e1 = sortedEvents[i];
-            for (let j = 1; j < sortedEvents.length; j++) {
-                let index = j + active % sortedEvents.length;
-                const e2 = graph[index];
-                if (!projectionOverlaps(e1.startDate || e1.date, e1.endDate || e1.date, e2.startDate || e2.date, e2.endDate || e2.date) {
-                    active = index
-                }
-            }
-        }
-    */
-    return graph;
 }
 
 interface EventTrackProps {
@@ -653,45 +606,6 @@ interface EventGraphProps {
     graph: EventGraph;
     bubbleRefOverrides?: HTMLDivElement[];
 }
-
-/*
-const graphsEqual = (graphA: EventGraph, graphB: EventGraph): boolean => {
-    if (graphA.length != graphB.length) {
-        return false
-    }
-
-    for (let i = 0; i < graphA.length; i++) {
-        const eventOrGroupA = graphA[i];
-        const eventOrGroupB = graphB[i];
-
-        if (typeof eventOrGroupA != typeof eventOrGroupB) {
-            return false
-        }
-
-        if (Array.isArray(eventOrGroupA)) {
-            const groupA = eventOrGroupA as EventGroup
-            const groupB = eventOrGroupB as EventGroup
-            const groupsEqual = groupA.map((trackA, j) => {
-                const trackB = groupB[j]
-                return graphsEqual(trackA, trackB)
-            })
-            // TODO combine with previous line
-            if (!groupsEqual.every(value => value === true))  {
-                return false
-            }
-        } else {
-            const eventA = eventOrGroupA as Event
-            const eventB = eventOrGroupB as Event
-            if (!(eventA.title == eventB.title && eventA.rect == eventB.rect)) { // HACK! Javascript somehow doesn't have a freakin' equals operator on objects
-                return false
-            }
-        }
-    }
-
-    return true
-}
-*/
-
 
 const printGraph = (graph: EventGraph, indent: number = 4): string => {
 
@@ -723,42 +637,7 @@ const printGraph = (graph: EventGraph, indent: number = 4): string => {
     return s
 }
 
-// FIXME stopgap solution to copy leaf nodes (events) that are reused to avoid a bug when their .rect and .vectors properties get overwritten
-const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
-    return cloneDeep(graph)
-}
-/*
-const uniqifyEventGraph = (graph: EventGraph): EventGraph => {
-    let nodes: EventGraph = []
-    let track: Event[] = []
-
-    for (let i = 0; i < graph.length; i++) {
-        const eventOrGroup = graph[i];
-
-        if (!Array.isArray(eventOrGroup)) {
-            const event = eventOrGroup as Event
-            track.push(cloneDeep(event))
-        } else {
-            if (track.length > 0) {
-                nodes.push(...track)
-                track = []
-            }
-            const group = eventOrGroup as EventGroup
-            nodes.push(group.map((track) => {
-                return uniqifyEventGraph(track)
-            }))
-        }
-    }
-
-    if (track.length > 0) {
-        nodes.push(...track)
-    }
-
-    return nodes
-}
-*/
-
-const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverrides }) => {
+const EventGraphComponent: React.FC<EventGraphProps> = ({ graph }) => {
     let nodes: JSX.Element[] = []
     let track: JSX.Element[] = []
 
@@ -799,7 +678,7 @@ const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, bubbleRefOverri
 
 interface TimelineProps {
     events?: Event[];
-    graph?: EventGraph; // (Event | Event[])[];
+    graph?: EventGraph;
 }
 
 const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
@@ -824,14 +703,10 @@ const rectFromRef = (ref: HTMLDivElement): Rect => {
 }
 
 const centerX = (rect: Rect) => {
-//const centerX = (bubble: HTMLDivElement) => {
-    // const rect = bubble.getBoundingClientRect();
     return rect.x + (rect.width / 2);
 }
 
 const centerY = (rect: Rect) => {
-// const centerY = (bubble: HTMLDivElement) => {
-    // const rect = bubble.getBoundingClientRect();
     return rect.y + (rect.height / 2);
 }
 
@@ -842,11 +717,6 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
         vectorMatrix.push([])
         event.vectors = vectorMatrix[i] // reset vectors
         if (!event.rect) {
-            /*
-            event.rect = ref.getBoundingClientRect()
-            event.rect.x = ref.offsetLeft // override
-            event.rect.y = ref.offsetTop // override
-            */
             event.rect = rectFromRef(ref) 
         }
     })
@@ -878,59 +748,19 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
     return vectorMatrix
 }
 
-const DAMPENING_FACTOR = 50.0
-
 const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
-
-    const jitter = () => {
-        return (Math.random() * 4) - 2
-    }
 
     eventAndRefPairs.forEach(([event, ref], i) => {
         (event.vectors || []).forEach((vector, i) => {
-            // const bubbleA = ref
             let [otherRect, dx, dy] = vector
             if (event.rect && isOverlapping(event.rect, otherRect)) {
-                // if (event.title == 'Student') {
-                    //console.log(`${event.title} x ${event.rect.x} y ${event.rect.y} dx ${dx} dy ${dy}`)
-                // }
-
                 let offsetX = dx / 4
                 let offsetY = dy / 16
-                /*
-                let dxCoefficient = dx < 0 ? -1 : 1
-                let dyCoefficient = dy < 0 ? -1 : 1
 
-                if (dx === 0) {
-                    offsetX = jitter()
-                } else {
-                    dx = Math.abs(dx)
-                    offsetX = (DAMPENING_FACTOR / (Math.min(dx, 1) ** 1.25))
-                    offsetX = Math.min(offsetX, Math.abs(event.rect.width) / 4) * dxCoefficient
-                }
-
-                if (dy === 0) {
-                    offsetY = jitter()
-                } else {
-                    dy = Math.abs(dy)
-                    offsetY = (DAMPENING_FACTOR / (Math.min(dy, 1) ** 1.25))
-                    offsetY = Math.min(offsetY, Math.abs(event.rect.height) / 4) * dyCoefficient
-                }
-
-                event.rect.x -= offsetX
-                event.rect.y -= offsetY
-                */
                 event.rect.x -= offsetX
                 event.rect.y -= offsetY
                 event.rect.styleX -= offsetX
                 event.rect.styleY -= offsetY
-
-                // if (event.title == 'Web designer') {
-                    /*
-                    console.log(`${event.title} offsetX ${offsetX} event.rect.x ${event.rect.x} event.rect.width ${event.rect.width}`)
-                    console.log(`${event.title} offsetY ${offsetY} event.rect.y ${event.rect.y} event.rect.height ${event.rect.height}`)
-                    */
-                // }
             }
         })
     })
@@ -953,7 +783,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             return 0;
         });
 
-        // graph = buildGraph(sortedEvents);
         graph = sortedEvents
     }
 
@@ -988,12 +817,9 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             let i = 0
             while (!isEqual(graph, oldGraph)) {
                 oldGraph = deepCopy(graph)
-                // console.log(`OLD GRAPH\n${oldGraph && printGraph(oldGraph)}`)
 
                 computeVectorMatrix(eventAndRefPairs, timelineRefs)
                 applyVectors(eventAndRefPairs)
-
-                // console.log(`NEW GRAPH\n${graph && printGraph(graph)}`)
 
                 i += 1
                 if (i > 50) {
@@ -1008,15 +834,13 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 
     const step = () => {
         console.log('step')
+
         if (graph) {
             const oldGraph = deepCopy(graph)
-            // console.log(`OLD GRAPH\n${printGraph(graph)}`)
 
             computeVectorMatrix(eventAndRefPairs, timelineRefs)
             applyVectors(eventAndRefPairs)
 
-            // graph = uniqifyEventGraph(graph)
-            // console.log(`NEW GRAPH\n${printGraph(graph)}`)
             if (isEqual(graph, oldGraph)) {
                 console.log('Iteration done!')
             } else {
@@ -1025,18 +849,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             setGraph(graph)
         }
     }
-
-    /*
-    const e1 = [event1]
-    e1[0].rect = {x: 3, y: 9, width: 11, height: 17}
-    let e2 = deepCopy(e1)
-    console.log(`isEqual(e1,deepCopy(e1)) ${isEqual(e1, e2)}`)
-    e2 = cloneDeep(e1)
-    console.log(`isEqual(e1,cloneDeep(e1)) ${isEqual(e1, e2)}`)
-    e2[0].rect!.x += 2
-    console.log(`e1.rect ${JSON.stringify(e1[0].rect)}`)
-    console.log(`e2.rect ${JSON.stringify(e2[0].rect)}`)
-    */
 
     return (
         <div className="timeline">
