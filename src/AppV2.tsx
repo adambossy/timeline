@@ -113,7 +113,7 @@ const EventRange: React.FC<EventRangeProps> = ({ event }) => {
         }
     }, [eventRef])
 
-    const height = monthDelta(event.startDate, event.endDate) * (YEAR_HEIGHT / 12)
+    const height = monthDelta(event.startDate!, event.endDate!) * (YEAR_HEIGHT / 12)
 
     return (
         <div className="event-range" ref={eventRef} style={{ height: `${height}px` }}>

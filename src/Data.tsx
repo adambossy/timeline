@@ -172,7 +172,7 @@ export const miniPyramidGraph: EventGraph = [
     ]
 ]
 
-export const medPyramid: EventGroup = [
+export const medPyramid: Event[] = [
     event1,
     event2,
     event2a,
@@ -496,7 +496,7 @@ export const hangsLinkedIn: Event[] = [
         title: "PHD Candidate",
         company: "UNSW",
         startDate: new Date(2020, 4),
-        endDate: null,
+        endDate: TODAY,
         location: "Sydney, New South Wales, Australia"
     },
     {
@@ -553,28 +553,24 @@ export const hangsLinkedIn: Event[] = [
         company: "Peel",
         startDate: new Date(2010, 8),
         endDate: new Date(2010, 11),
-        location: null
     },
     {
         title: "Founder",
         company: "Bumblebee Labs",
         startDate: new Date(2008, 0),
         endDate: new Date(2010, 0),
-        location: null
     },
     {
         title: "Research Assistant",
         company: "FEMA",
         startDate: new Date(2007, 8),
         endDate: new Date(2008, 5),
-        location: null
     },
     {
         title: "PhD Student",
         company: "NICTA",
         startDate: new Date(2005, 0),
         endDate: new Date(2006, 0),
-        location: null
     }
 ]
 
@@ -621,84 +617,84 @@ export const hangsGraph: EventGraph = [
         ],
     ],
 ]
-  
+
 export const sergiosLinkedIn: Event[] = [
     {
-      title: 'Chief Technology OfficerChief Technology Officer',
-      company: 'Bulk MRO Industrial SupplyBulk MRO Industrial Supply',
-      startDate: new Date(2022, 0),
-      endDate: 'TODAY',
-      location: 'New York, United StatesNew York, United States'
+        title: 'Chief Technology OfficerChief Technology Officer',
+        company: 'Bulk MRO Industrial SupplyBulk MRO Industrial Supply',
+        startDate: new Date(2022, 0),
+        endDate: TODAY,
+        location: 'New York, United StatesNew York, United States'
     },
     {
-      title: 'Fractional CTO | Tech Consultant & AdvisorFractional CTO | Tech Consultant & Advisor',
-      company: 'SergioPereira.ioSergioPereira.io',
-      startDate: new Date(2017, 0),
-      endDate: 'TODAY',
-      location: 'Unknown'
+        title: 'Fractional CTO | Tech Consultant & AdvisorFractional CTO | Tech Consultant & Advisor',
+        company: 'SergioPereira.ioSergioPereira.io',
+        startDate: new Date(2017, 0),
+        endDate: TODAY,
+        location: 'Unknown'
     },
     {
-      title: 'Content Creator & Public SpeakerContent Creator & Public Speaker',
-      company: '',
-      startDate: new Date(2018, 0),
-      endDate: 'TODAY',
-      location: 'Unknown'
+        title: 'Content Creator & Public SpeakerContent Creator & Public Speaker',
+        company: '',
+        startDate: new Date(2018, 0),
+        endDate: TODAY,
+        location: 'Unknown'
     },
     {
-      title: 'FounderFounder',
-      company: 'Remote Work AcademyRemote Work Academy',
-      startDate: new Date(2022, 7),
-      endDate: 'TODAY',
-      location: 'Unknown'
+        title: 'FounderFounder',
+        company: 'Remote Work AcademyRemote Work Academy',
+        startDate: new Date(2022, 7),
+        endDate: TODAY,
+        location: 'Unknown'
     },
     {
-      title: 'Co AuthorCo Author',
-      company: 'The CYCLES BookThe CYCLES Book',
-      startDate: new Date(2018, 0),
-      endDate: 'TODAY',
-      location: 'Unknown'
+        title: 'Co AuthorCo Author',
+        company: 'The CYCLES BookThe CYCLES Book',
+        startDate: new Date(2018, 0),
+        endDate: TODAY,
+        location: 'Unknown'
     },
     {
-      title: 'Fractional CTOFractional CTO',
-      company: 'Signature LacrosseSignature Lacrosse',
-      startDate: new Date(2021, 9),
-      endDate: new Date(2022, 1),
-      location: 'Tampa, Florida, United StatesTampa, Florida, United States'
+        title: 'Fractional CTOFractional CTO',
+        company: 'Signature LacrosseSignature Lacrosse',
+        startDate: new Date(2021, 9),
+        endDate: new Date(2022, 1),
+        location: 'Tampa, Florida, United StatesTampa, Florida, United States'
     },
     {
-      title: 'Co-Founder & CTOCo-Founder & CTO',
-      company: 'StudentFinanceStudentFinance',
-      startDate: new Date(2019, 0),
-      endDate: new Date(2021, 10),
-      location: 'London, England, United KingdomLondon, England, United Kingdom'
+        title: 'Co-Founder & CTOCo-Founder & CTO',
+        company: 'StudentFinanceStudentFinance',
+        startDate: new Date(2019, 0),
+        endDate: new Date(2021, 10),
+        location: 'London, England, United KingdomLondon, England, United Kingdom'
     },
     {
-      title: 'Co-Founder & CTOCo-Founder & CTO',
-      company: 'Tech HQTech HQ',
-      startDate: new Date(2018, 2),
-      endDate: new Date(2020, 5),
-      location: 'London, United KingdomLondon, United Kingdom'
+        title: 'Co-Founder & CTOCo-Founder & CTO',
+        company: 'Tech HQTech HQ',
+        startDate: new Date(2018, 2),
+        endDate: new Date(2020, 5),
+        location: 'London, United KingdomLondon, United Kingdom'
     },
     {
-      title: 'Fractional CTOFractional CTO',
-      company: 'Rightfoot · Part-timeRightfoot · Part-time',
-      startDate: new Date(2019, 9),
-      endDate: new Date(2019, 11),
-      location: 'San Francisco Bay AreaSan Francisco Bay Area'
+        title: 'Fractional CTOFractional CTO',
+        company: 'Rightfoot · Part-timeRightfoot · Part-time',
+        startDate: new Date(2019, 9),
+        endDate: new Date(2019, 11),
+        location: 'San Francisco Bay AreaSan Francisco Bay Area'
     },
     {
-      title: 'Fractional Technical Product ManagerFractional Technical Product Manager',
-      company: 'DeepCode (The Software Revolution) by Snyk.io · Part-timeDeepCode (The Software Revolution) by Snyk.io · Part-time',
-      startDate: new Date(2018, 10),
-      endDate: new Date(2019, 9),
-      location: 'Zurich, SwitzerlandZurich, Switzerland'
+        title: 'Fractional Technical Product ManagerFractional Technical Product Manager',
+        company: 'DeepCode (The Software Revolution) by Snyk.io · Part-timeDeepCode (The Software Revolution) by Snyk.io · Part-time',
+        startDate: new Date(2018, 10),
+        endDate: new Date(2019, 9),
+        location: 'Zurich, SwitzerlandZurich, Switzerland'
     },
     {
-      title: 'Fractional CTOFractional CTO',
-      company: 'PaybyrdPaybyrd',
-      startDate: new Date(2019, 2),
-      endDate: new Date(2019, 8),
-      location: 'Amsterdam, North Holland, NetherlandsAmsterdam, North Holland, Netherlands'
+        title: 'Fractional CTOFractional CTO',
+        company: 'PaybyrdPaybyrd',
+        startDate: new Date(2019, 2),
+        endDate: new Date(2019, 8),
+        location: 'Amsterdam, North Holland, NetherlandsAmsterdam, North Holland, Netherlands'
     },
 ]
 
