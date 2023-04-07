@@ -361,7 +361,6 @@ const formatDateRange = (event: Event): string | undefined => {
 }
 
 const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
-    const branchContext = useContext(BranchContext);
     const eventRef = useRef<HTMLDivElement | null>(null)
     const [rect, setRect] = useState<DOMRect | null>(null)
 
@@ -375,11 +374,9 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
     }, [eventRef])
 
     return (
-        <React.Fragment>
-            <div className="event-range" ref={eventRef} style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={branchContext} instanceRect={rect} />
-            </div>
-        </React.Fragment>
+        <div className="event-range" ref={eventRef} style={{ height: height + "px" }}>
+            <EventBubble event={event} instanceRect={rect} />
+        </div>
     );
 };
 
@@ -388,7 +385,6 @@ interface EventInstanceProps {
 }
 
 const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
-    const context = useContext(BranchContext);
     const eventRef = useRef<HTMLDivElement | null>(null)
     const [rect, setRect] = useState<DOMRect | null>(null)
 
@@ -403,7 +399,7 @@ const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
   
     return (
         <div className="event-instance" ref={eventRef}>
-            <EventBubble event={event} bubbleSide={context} instanceRect={rect} />
+            <EventBubble event={event} instanceRect={rect} />
         </div>
     )
 }
@@ -449,7 +445,10 @@ const Line: React.FC<LineProps> = ((props) => {
     // This component draws a line from the a bubble rect to an instance rect
     // and is a child of bubble rect
 
-    let { bubbleRect, instanceRect, bubbleSide } = props;
+    let { bubbleRect, instanceRect } = props;
+
+    const branchContext = useContext(BranchContext);
+    let bubbleSide = branchContext ? branchContext as BubbleSide : BubbleSide.LEFT
 
     const lineOrigin = (bubbleSide === BubbleSide.LEFT) ?
         {
@@ -472,8 +471,6 @@ const Line: React.FC<LineProps> = ((props) => {
     const angle = Math.atan2(dy, dx) * 180 / Math.PI
     const length = Math.sqrt(dx * dx + dy * dy)
 
-    console.log(`line xA ${xA} -xB ${xB} = dx ${dx} | yA ${yA} -yB ${yB} = dy ${dy} | angle ${angle} | length ${length}`)
-
     const lineContainerStyle = {
         left: bubbleSide === BubbleSide.LEFT ? `calc(100% + 4px - ${length}px)` : `calc(-${length}px - 4px)`, // 4px = border width
         width: length * 2 + "px",
@@ -494,11 +491,10 @@ const Line: React.FC<LineProps> = ((props) => {
 
 interface EventBubbleProps {
     event: Event,
-    bubbleSide: BubbleSide | unknown, // FIXME this should never be unknown
     instanceRect: DOMRect | null,
 }
 
-const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide, instanceRect }) => {
+const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
 
@@ -506,9 +502,8 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide, instanceRe
         addBubbleRef(event, bubbleRef.current); // Used to pass bubble refs to Timeline component and have it sort among them at the top level
     }, [addBubbleRef]);
 
-    if (!bubbleSide) {
-        bubbleSide = BubbleSide.LEFT;
-    }
+    const branchContext = useContext(BranchContext);
+    let bubbleSide = branchContext ? branchContext as BubbleSide : BubbleSide.LEFT
 
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
@@ -530,8 +525,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide, instanceRe
             {event.rect && instanceRect && bubbleSide && (
                 <Line
                     bubbleRect={event.rect}
-                    instanceRect={instanceRect}
-                    bubbleSide={bubbleSide} />
+                    instanceRect={instanceRect} />
             )}
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
