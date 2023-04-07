@@ -377,7 +377,7 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
     return (
         <React.Fragment>
             <div className="event-range" ref={eventRef} style={{ height: height + "px" }}>
-                <EventBubble event={event} bubbleSide={branchContext} instanceRect={rect} ref={eventRef} />
+                <EventBubble event={event} bubbleSide={branchContext} instanceRect={rect} />
             </div>
         </React.Fragment>
     );
@@ -403,7 +403,7 @@ const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
   
     return (
         <div className="event-instance" ref={eventRef}>
-            <EventBubble event={event} bubbleSide={context} instanceRect={rect} ref={eventRef} />
+            <EventBubble event={event} bubbleSide={context} instanceRect={rect} />
         </div>
     )
 }
@@ -440,17 +440,31 @@ const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
 }
 
 interface LineProps {
-    xA: number,
-    yA: number,
-    xB: number,
-    yB: number,
-    bubbleRect?: Rect,
-    instanceRect: DOMRect | null, // TODO change to ? and remove null - need to propagate this up the component tree
-    bubbleSide: BubbleSide | unknown,
+    bubbleRect: Rect,
+    instanceRect: DOMRect, // TODO change to ? and remove null - need to propagate this up the component tree
+    bubbleSide: BubbleSide
 }
 
 const Line: React.FC<LineProps> = ((props) => {
-    let { xA, yA, xB, yB, bubbleSide } = props;
+    // This component draws a line from the a bubble rect to an instance rect
+    // and is a child of bubble rect
+
+    let { bubbleRect, instanceRect, bubbleSide } = props;
+
+    const lineOrigin = (bubbleSide === BubbleSide.LEFT) ?
+        {
+            x: bubbleRect.x + bubbleRect.width,
+            y: bubbleRect.y + (bubbleRect.height / 2),
+        } :
+        {
+            x: bubbleRect.x,
+            y: bubbleRect.y + (bubbleRect.height / 2),
+        }
+
+    const xA = lineOrigin.x
+    const yA = lineOrigin.y
+    const xB = instanceRect.x + (instanceRect.width / 2)
+    const yB = instanceRect.y + (instanceRect.height / 2)
 
     const dx = xB - xA
     const dy = yB - yA
@@ -484,17 +498,13 @@ interface EventBubbleProps {
     instanceRect: DOMRect | null,
 }
 
-const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event, bubbleSide, instanceRect }) => {
+const EventBubble: React.FC<EventBubbleProps> = ({ event, bubbleSide, instanceRect }) => {
     const bubbleRef = useRef<HTMLDivElement | null>(null);
     const addBubbleRef = useContext(BubbleRefContext);
 
     useEffect(() => {
-        addBubbleRef(event, bubbleRef.current);
+        addBubbleRef(event, bubbleRef.current); // Used to pass bubble refs to Timeline component and have it sort among them at the top level
     }, [addBubbleRef]);
-
-    useEffect(() => { // TODO delete this use of useEffect
-        console.log(`bubbleRef ${bubbleRef && bubbleRef.current}`)
-    }, [bubbleRef]);
 
     if (!bubbleSide) {
         bubbleSide = BubbleSide.LEFT;
@@ -514,36 +524,21 @@ const EventBubble = React.forwardRef<HTMLDivElement, EventBubbleProps>(({ event,
         top: event.rect.styleY,
     } : {}
 
-    console.log(`event.rect ${event && JSON.stringify(event.rect)}`)
-    console.log(`instanceRect ${instanceRect && JSON.stringify(instanceRect)}`)
-
-    let lineOrigin
-    if (event.rect) {
-        if (bubbleSide === BubbleSide.LEFT) {
-            lineOrigin = {
-                x: event.rect.x + event.rect.width,
-                y: event.rect.y + (event.rect.height / 2),
-            }
-        } else {
-            lineOrigin = {
-                x: event.rect.x,
-                y: event.rect.y + (event.rect.height / 2),
-            }
-        }
-    }
-
     return (
         <div className={bubbleClassNames} ref={bubbleRef} style={style}>
             <div className="event-range-bubble-arrow"></div>
-            {
-                instanceRect && lineOrigin && <Line xA={lineOrigin.x} yA={lineOrigin.y} xB={instanceRect.x + (instanceRect.width / 2)} yB={instanceRect.y + (instanceRect.height / 2)} bubbleRect={event.rect} instanceRect={instanceRect} bubbleSide={bubbleSide} />
-            }
+            {event.rect && instanceRect && bubbleSide && (
+                <Line
+                    bubbleRect={event.rect}
+                    instanceRect={instanceRect}
+                    bubbleSide={bubbleSide} />
+            )}
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
             {SHOW_VECTORS && vectors}
         </div>
     )
-})
+}
 
 interface EventGroupProps {
     group: EventGroup;
@@ -870,7 +865,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
 function AppV2() {
     return (
         <React.Fragment>
-            {/*
             <Timeline graph={deepCopy(singleInstanceGraph)} />
             <hr />
             <Timeline graph={deepCopy(twoInstancesGraph)} />
@@ -879,7 +873,6 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(mixedEventsGraph)} />
             <hr />
-            */}
             <Timeline graph={deepCopy(collidingInstancesGraph)} />
             <hr />
             <Timeline graph={deepCopy(miniPyramidGraph)} />
@@ -900,8 +893,6 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(threeColumnsGraph)} />
             <hr />
-            {/*
-            */}
         </React.Fragment>
     )
 }
