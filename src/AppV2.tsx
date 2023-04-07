@@ -47,7 +47,8 @@ function deepCopy<T>(obj: T): T {
   }
   
 
-
+const TODAY = new Date()
+const YEAR_HEIGHT = 100 // Super simple way of starting
 const SHOW_VECTORS = false
 
 const BranchContext = React.createContext('');
@@ -330,30 +331,109 @@ const threeColumnsGraph: EventGraph = [
 const adamsGraph: EventGraph = [
     {
         title: "Founder",
-        startDate: new Date("2013-01-01"),
-        endDate: new Date("2016-03-01"),
+        startDate: new Date(2022, 9),
+        endDate: TODAY,
     },
     {
         title: "Senior Engineering Manager",
-        startDate: new Date("2019-01-01"),
-        endDate: new Date("2022-10-01"),
+        startDate: new Date(2019, 0),
+        endDate: new Date(2022, 9),
     },
     {
         title: "Engineering Manager",
-        startDate: new Date("2016-01-01"),
-        endDate: new Date("2018-11-01"),
+        startDate: new Date(2016, 0),
+        endDate: new Date(2018, 10),
     },
     {
         title: "Student",
-        startDate: new Date("2016-08-01"),
-        endDate: new Date("2015-12-01"),
+        startDate: new Date(2014, 7),
+        endDate: new Date(2015, 11),
     },
     {
         title: "Member of Technical Staff",
-        startDate: new Date("2011-02-01"),
-        endDate: new Date("2014-18-01"),
+        startDate: new Date(2011, 1),
+        endDate: new Date(2014, 7),
     }
+];
+
+const hangsGraph: EventGraph = [
+    [
+        [
+            {
+                title: "Founder - Bumblebee Consulting",
+                startDate: new Date(2013, 0),
+                endDate: new Date(2017, 0),
+            },
+        ],
+        [
+            {
+                title: "Founder - Plentiful",
+                startDate: new Date(2015, 0),
+                endDate: new Date(2016, 0),
+            },
+        ],
+    ],
+    [
+        [
+            {
+                title: "Chief Operating Offer - Juniper",
+                startDate: new Date(2012, 0),
+                endDate: new Date(2013, 0),
+            },
+        ],
+        [
+            {
+                title: "Founder - Product Design Guild",
+                startDate: new Date(2010, 0),
+                endDate: new Date(2013, 0),
+            },
+        ],
+        [
+            {
+                title: "Social Designer - Peel",
+                startDate: new Date(2010, 8),
+                endDate: new Date(2010, 11),
+            },
+        ],
+    ],
 ]
+  
+const sergiosGraph: EventGraph = [
+    [
+        [
+            {
+                title: "Chief Technology Offer",
+                startDate: new Date(2022, 0),
+                endDate: TODAY,
+            },
+        ],
+        [
+            [
+                [
+                    {
+                        title: "Fractional CTO | Tech Consultant & Advisor",
+                        startDate: new Date(2017, 0),
+                        endDate: TODAY,
+                    },
+                ],
+                [
+                    {
+                        title: "Content Creator & Public Speaker",
+                        startDate: new Date(2018, 0),
+                        endDate: TODAY,
+                    },
+                ],
+            ]
+        ],
+        [
+            {
+                title: "Founder",
+                startDate: new Date(2022, 7),
+                endDate: TODAY,
+            },
+        ],
+    ]
+];
 
 enum BubbleSide {
     RIGHT = 'right',
@@ -362,7 +442,6 @@ enum BubbleSide {
 
 interface EventRangeProps {
     event: Event,
-    height: number;
 }
 
 const formatDate = (date?: Date): string | undefined => {
@@ -388,7 +467,14 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' - ' + endDate : ''))
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
+function monthDelta(date1, date2) {
+    const yearDiff = date2.getFullYear() - date1.getFullYear();
+    const monthDiff = date2.getMonth() - date1.getMonth();
+    const totalMonths = yearDiff * 12 + monthDiff;
+    return totalMonths;
+}
+
+const EventRange: React.FC<EventRangeProps> = ({ event }) => {
     const eventRef = useRef<HTMLDivElement | null>(null)
     const [rect, setRect] = useState<DOMRect | null>(null)
 
@@ -401,8 +487,14 @@ const EventRange: React.FC<EventRangeProps> = ({ event, height }) => {
         }
     }, [eventRef])
 
+    const height = monthDelta(event.startDate, event.endDate) * (YEAR_HEIGHT / 12)
+    console.log(`height ${height}`)
+    if (height < 0) {
+        console.log(`startDate ${event.startDate} endDate ${event.endDate}`)
+    }
+
     return (
-        <div className="event-range" ref={eventRef} style={{ height: height + "px" }}>
+        <div className="event-range" ref={eventRef} style={{ height: `${height}px` }}>
             <EventBubble event={event} instanceRect={rect} />
         </div>
     );
@@ -655,7 +747,7 @@ const EventGraphComponent: React.FC<EventGraphProps> = ({ graph }) => {
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
             if (event.startDate) {
-                track.push(<EventRange event={event} height={100} />)
+                track.push(<EventRange event={event} />)
             } else if (event.date) {
                 track.push(<EventInstance event={event} />)
             }
@@ -858,6 +950,8 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
     }
 
+    console.log(formatDate(new Date('2013-01-01')))
+
     return (
         <div className="timeline">
             <BubbleRefContext.Provider value={addBubbleRef}>
@@ -910,7 +1004,11 @@ function AppV2() {
             <Timeline graph={deepCopy(threeColumnsGraph)} />
             <hr />
             */}
+            <Timeline graph={deepCopy(hangsGraph)} />
+            <hr />
             <Timeline graph={deepCopy(adamsGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(sergiosGraph)} />
             <hr />
         </React.Fragment>
     )
