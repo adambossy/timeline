@@ -1,6 +1,8 @@
 import { cloneDeep, isEqual } from 'lodash';
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './AppV2.css';
+import * as d from './Data'
+import { Event, EventGraph, EventGroup, Rect, Vector } from './Data'
 
 
 function deepCopy<T>(obj: T): T {
@@ -47,7 +49,6 @@ function deepCopy<T>(obj: T): T {
   }
   
 
-const TODAY = new Date()
 const YEAR_HEIGHT = 100 // Super simple way of starting
 const SHOW_VECTORS = false
 
@@ -59,381 +60,6 @@ const BubbleRefContext = React.createContext<BubbleRefContextType>(() => { });
 type TimelineRefContextType = (el: HTMLDivElement | null) => void;
 const TimelineRefContext = React.createContext<TimelineRefContextType>(() => { });
 
-
-type Vector = [
-    other: Rect,
-    dx: number,
-    dy: number,
-];
-
-interface Rect {
-    x: number,
-    y: number,
-    styleX: number, // relative to parent, used for style: left
-    styleY: number, // relative to parent, used for style: top
-    width: number,
-    height: number,
-}
-
-interface Event {
-    title: string,
-    date?: Date,
-    startDate?: Date,
-    endDate?: Date,
-    rect?: Rect,
-    vectors?: Vector[],
-    id?: number, // debugging HACK
-}
-
-type EventGroup = EventGraph[];
-type EventGraph = (Event | EventGroup)[];
-
-const event1: Event = {
-    title: "Grill master",
-    date: new Date("2010-01-01"),
-}
-
-const event1a: Event = {
-    title: "Dishwasher",
-    date: new Date("2010-01-01"),
-}
-
-const event2: Event = {
-    title: "Smoothie maker",
-    date: new Date("2011-01-01"),
-}
-
-const event3: Event = {
-    title: "Web designer",
-    date: new Date("2012-01-01"),
-}
-
-const event4: Event = {
-    title: "Software engineer",
-    date: new Date("2013-01-01"),
-}
-
-const event5: Event = {
-    title: "Founder",
-    date: new Date("2014-01-01"),
-}
-
-const group1: EventGroup = [
-    [
-        event1,
-    ],
-    [
-        event2,
-    ]
-]
-
-const range1: Event = {
-    title: "Student",
-    startDate: new Date("2010-01-01"),
-    endDate: new Date("2010-03-01"),
-}
-
-const range2: Event = {
-    title: "Grad Student",
-    startDate: new Date("2013-01-01"),
-    endDate: new Date("2016-03-01"),
-}
-
-const group2: EventGroup = [
-    [
-        event1,
-    ],
-    [
-        range1,
-    ]
-]
-
-const singleInstance: Event[] = [
-    event1,
-]
-
-const singleInstanceGraph: EventGraph = [
-    event1,
-]
-
-const singleRange: Event[] = [
-    range1,
-]
-
-const twoInstances: Event[] = [
-    event1,
-    event2,
-]
-
-const twoInstancesGraph: EventGraph = [
-    event1,
-    event2,
-]
-
-const threeInstancesGraph: EventGraph = [
-    event1,
-    event2,
-    event3,
-]
-
-const mixedEventsGraph: EventGraph = [
-    event1,
-    range1,
-    event2,
-]
-
-const collidingInstances: Event[] = [
-    event1,
-    event1a,
-]
-
-const collidingInstancesGraph: EventGraph = [
-    group1
-]
-
-const miniPyramidGraph: EventGraph = [
-    event3,
-    group1
-]
-
-const nestedGroup1: EventGroup = [
-    [
-        event1,
-        [
-            [
-                event1a,
-            ],
-            [
-                event2,
-            ]
-        ]
-    ],
-    [
-        event3,
-        [
-            [
-                event4,
-            ],
-            [
-                event5,
-            ]
-        ]
-    ]
-]
-
-const medPyramidGraph: EventGraph = [
-    nestedGroup1
-]
-
-const nestedGroup2: EventGroup = [
-    [
-        event1,
-        group1,
-        nestedGroup1,
-    ],
-    [
-        event1,
-        group1,
-        nestedGroup1,
-    ]
-]
-
-const largePyramidGraph: EventGraph = [
-    nestedGroup2
-]
-
-const collidingInstanceAndRange: Event[] = [
-    range1,
-    event2,
-]
-
-const collidingInstanceAndRangeGraph: EventGraph = [
-    event3,
-    group2,
-]
-
-const group2a: EventGroup = [
-    [
-        event1,
-        [
-            [
-                event1,
-            ],
-            [
-                range1,
-            ]
-        ]
-    ],
-    [
-        range1,
-    ]
-]
-
-const miniPyramidWeightedLeftGraph: EventGraph = [
-    event1,
-    group2a,
-]
-
-const group2b: EventGroup = [
-    [
-        range1,
-    ],
-    [
-        event1a,
-        [
-            [
-                event2,
-            ],
-            [
-                range2,
-            ]
-        ]
-    ]
-]
-
-const miniPyramidWeightedRightGraph: EventGraph = [
-    event1,
-    group2b,
-]
-
-const group3: EventGroup = [
-    [
-        range1,
-    ],
-    [
-        event1,
-    ]
-]
-
-const collidingInstanceAndRangeFlippedGraph: EventGraph = [
-    group3,
-]
-
-const danglingEventGraph: EventGraph = [
-    group1,
-    event1
-]
-
-const threeColumnsGraph: EventGraph = [
-    [
-        [
-            event1
-        ],
-        [
-            event2,
-        ],
-        [
-            range1,
-        ]
-    ]
-]
-
-const adamsGraph: EventGraph = [
-    {
-        title: "Founder",
-        startDate: new Date(2022, 9),
-        endDate: TODAY,
-    },
-    {
-        title: "Senior Engineering Manager",
-        startDate: new Date(2019, 0),
-        endDate: new Date(2022, 9),
-    },
-    {
-        title: "Engineering Manager",
-        startDate: new Date(2016, 0),
-        endDate: new Date(2018, 10),
-    },
-    {
-        title: "Student",
-        startDate: new Date(2014, 7),
-        endDate: new Date(2015, 11),
-    },
-    {
-        title: "Member of Technical Staff",
-        startDate: new Date(2011, 1),
-        endDate: new Date(2014, 7),
-    }
-];
-
-const hangsGraph: EventGraph = [
-    [
-        [
-            {
-                title: "Founder - Bumblebee Consulting",
-                startDate: new Date(2013, 0),
-                endDate: new Date(2017, 0),
-            },
-        ],
-        [
-            {
-                title: "Founder - Plentiful",
-                startDate: new Date(2015, 0),
-                endDate: new Date(2016, 0),
-            },
-        ],
-    ],
-    [
-        [
-            {
-                title: "Chief Operating Offer - Juniper",
-                startDate: new Date(2012, 0),
-                endDate: new Date(2013, 0),
-            },
-        ],
-        [
-            {
-                title: "Founder - Product Design Guild",
-                startDate: new Date(2010, 0),
-                endDate: new Date(2013, 0),
-            },
-        ],
-        [
-            {
-                title: "Social Designer - Peel",
-                startDate: new Date(2010, 8),
-                endDate: new Date(2010, 11),
-            },
-        ],
-    ],
-]
-  
-const sergiosGraph: EventGraph = [
-    [
-        [
-            {
-                title: "Chief Technology Offer",
-                startDate: new Date(2022, 0),
-                endDate: TODAY,
-            },
-        ],
-        [
-            [
-                [
-                    {
-                        title: "Fractional CTO | Tech Consultant & Advisor",
-                        startDate: new Date(2017, 0),
-                        endDate: TODAY,
-                    },
-                ],
-                [
-                    {
-                        title: "Content Creator & Public Speaker",
-                        startDate: new Date(2018, 0),
-                        endDate: TODAY,
-                    },
-                ],
-            ]
-        ],
-        [
-            {
-                title: "Founder",
-                startDate: new Date(2022, 7),
-                endDate: TODAY,
-            },
-        ],
-    ]
-];
 
 enum BubbleSide {
     RIGHT = 'right',
@@ -467,7 +93,7 @@ const formatDateRange = (event: Event): string | undefined => {
     return date_ || (startDate + (endDate ? ' - ' + endDate : ''))
 }
 
-function monthDelta(date1, date2) {
+const monthDelta = (date1: Date, date2: Date): number => {
     const yearDiff = date2.getFullYear() - date1.getFullYear();
     const monthDiff = date2.getMonth() - date1.getMonth();
     const totalMonths = yearDiff * 12 + monthDiff;
@@ -488,10 +114,6 @@ const EventRange: React.FC<EventRangeProps> = ({ event }) => {
     }, [eventRef])
 
     const height = monthDelta(event.startDate, event.endDate) * (YEAR_HEIGHT / 12)
-    console.log(`height ${height}`)
-    if (height < 0) {
-        console.log(`startDate ${event.startDate} endDate ${event.endDate}`)
-    }
 
     return (
         <div className="event-range" ref={eventRef} style={{ height: `${height}px` }}>
@@ -532,7 +154,7 @@ interface VectorProps {
     dy: number;
 }
 
-const Vector: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
+const VectorComponent: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
     const angle = Math.atan2(dy, dx) * 180 / Math.PI
     const length = Math.sqrt(dx * dx + dy * dy)
 
@@ -621,7 +243,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
     const vectors = SHOW_VECTORS && (event.vectors || []).map((v, i) => {
         const [_, dx, dy] = v
         if (event.rect) {
-            return <Vector width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
+            return <VectorComponent width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
         }
     })
 
@@ -866,6 +488,52 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
     })
 }
 
+// NOTE: there are elements to this function that may be LinkedIn-specific 
+export const buildGraph = (sortedEvents: Event[]): EventGraph => {
+    // let graph = [[sortedEvents[0]]];
+    let graph: EventGraph = []
+    let cols = []
+    for (let i = 0; i < sortedEvents.length; i++) {
+        const e1 = sortedEvents[i]
+
+        let colMax
+        if (i + 1 < sortedEvents.length) {
+            const e2 = sortedEvents[i + 1]
+            const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
+            const maxA = e1.endDate && e1.endDate.getTime() || e1.date && e1.date.getTime()
+            const minB = e2.startDate && e2.startDate.getTime() || e2.date && e2.date.getTime()
+            const maxB = e2.endDate && e2.endDate.getTime() || e2.date && e2.date.getTime()
+            
+            // Do pairwise matching against sorted adjacent events, and end
+            // the group once there's no more overlap with the previous event
+            if (minA && maxA  && minB && maxB) {
+                if (!projectionOverlaps(minA, maxA, minB, maxB)) {
+                    if (cols.length) {
+                        graph.push(cols)
+                        cols = []
+                    }
+                    graph.push(e1)
+                } else {
+                    if (!cols.length) {
+                        cols.push([e1])
+                    }
+                    cols.push([e2])
+                }
+            }
+        } else {
+            if (!cols.length) {
+                graph.push(e1)
+            }
+        }
+    }
+
+    if (cols.length) {
+        graph.push(cols)
+    }
+
+    return graph
+}
+
 const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     if ((events === undefined) === (graph === undefined)) {
         throw new Error("Either `events` or `graph` must be defined, but not both.")
@@ -883,7 +551,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             return 0;
         });
 
-        graph = sortedEvents
+        graph = buildGraph(sortedEvents)
     }
 
     const [eventAndRefPairs, setBubbleRefs] = useState<[Event, HTMLDivElement][]>([]);
@@ -925,8 +593,8 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
                 if (i > 50) {
                     break
                 }
-                console.log(`iteration #${i}`)
             }
+            console.log(`Laid out graph using ${i} iterations.`)
             setGraph(graph)
             setRenderedOnce(true)
         }
@@ -950,7 +618,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
     }
 
-    console.log(formatDate(new Date('2013-01-01')))
+    console.log(buildGraph(d.threeRangesTwoDisjointOverlappingPairs))
 
     return (
         <div className="timeline">
@@ -973,42 +641,46 @@ function AppV2() {
     return (
         <React.Fragment>
             {/*
-            <Timeline graph={deepCopy(singleInstanceGraph)} />
+            <Timeline graph={deepCopy(d.singleInstanceGraph)} />
             <hr />
-            <Timeline graph={deepCopy(singleInstanceGraph)} />
+            <Timeline graph={deepCopy(d.singleInstanceGraph)} />
             <hr />
-            <Timeline graph={deepCopy(twoInstancesGraph)} />
+            <Timeline graph={deepCopy(d.twoInstancesGraph)} />
             <hr />
-            <Timeline graph={deepCopy(threeInstancesGraph)} />
+            <Timeline graph={deepCopy(d.threeInstancesGraph)} />
             <hr />
-            <Timeline graph={deepCopy(mixedEventsGraph)} />
+            <Timeline graph={deepCopy(d.mixedEventsGraph)} />
             <hr />
-            <Timeline graph={deepCopy(collidingInstancesGraph)} />
             <hr />
-            <Timeline graph={deepCopy(miniPyramidGraph)} />
+            <Timeline graph={deepCopy(d.collidingInstancesGraph)} />
             <hr />
-            <Timeline graph={deepCopy(collidingInstanceAndRangeGraph)} />
+            <Timeline graph={deepCopy(d.miniPyramidGraph)} />
             <hr />
-            <Timeline graph={deepCopy(collidingInstanceAndRangeFlippedGraph)} />
+            <Timeline graph={deepCopy(d.collidingInstanceAndRangeGraph)} />
             <hr />
-            <Timeline graph={deepCopy(danglingEventGraph)} />
+            <Timeline graph={deepCopy(d.collidingInstanceAndRangeFlippedGraph)} />
             <hr />
-            <Timeline graph={deepCopy(medPyramidGraph)} />
+            <Timeline graph={deepCopy(d.danglingEventGraph)} />
             <hr />
-            <Timeline graph={deepCopy(miniPyramidWeightedRightGraph)} />
+            <Timeline graph={deepCopy(d.medPyramidGraph)} />
             <hr />
-            <Timeline graph={deepCopy(largePyramidGraph)} />
             <hr />
-            <Timeline graph={deepCopy(miniPyramidWeightedLeftGraph)} />
+            <Timeline graph={deepCopy(d.miniPyramidWeightedRightGraph)} />
             <hr />
-            <Timeline graph={deepCopy(threeColumnsGraph)} />
+            <Timeline graph={deepCopy(d.miniPyramidWeightedLeftGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(d.threeColumnsGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(d.hangsGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(d.adamsGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(d.sergiosGraph)} />
+            <hr />
+            <Timeline graph={deepCopy(d.largePyramidGraph)} />
             <hr />
             */}
-            <Timeline graph={deepCopy(hangsGraph)} />
-            <hr />
-            <Timeline graph={deepCopy(adamsGraph)} />
-            <hr />
-            <Timeline graph={deepCopy(sergiosGraph)} />
+            <Timeline events={deepCopy(d.threeRangesTwoDisjointOverlappingPairs)} />
             <hr />
         </React.Fragment>
     )
