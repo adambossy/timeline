@@ -10,7 +10,11 @@ import {
     miniPyramid,
     miniPyramidGraph,
     threeRangesTwoDisjointOverlappingPairs,
-    threeRangesTwoDisjointOverlappingPairsGraph
+    threeRangesTwoDisjointOverlappingPairsGraph,
+    threeRangesOneOverlappingPair,
+    threeRangesOneOverlappingPairsGraph,
+    disjointPairOverlaps,
+    disjointPairOverlapsGraph
 } from './Data';
 
 describe('builds graphs correctly', () => {
@@ -34,8 +38,18 @@ describe('builds graphs correctly', () => {
         expect(graph).toEqual(miniPyramidGraph); // assert that the output is correct
     });
 
-    it('three ranges two disjoint overlapping pairs', () => {
+    it('three ranges two disjoint sequential overlapping pairs', () => {
         const graph = buildGraph(threeRangesTwoDisjointOverlappingPairs); // call the function with inputs
         expect(graph).toEqual(threeRangesTwoDisjointOverlappingPairsGraph); // assert that the output is correct
+    });
+
+    it('three ranges one overlapping pair', () => {
+        const graph = buildGraph(threeRangesOneOverlappingPair); // call the function with inputs
+        expect(graph).toEqual(threeRangesOneOverlappingPairsGraph); // assert that the output is correct
+    });
+
+    it('disjoint range pair overlaps', () => {
+        const graph = buildGraph(disjointPairOverlaps); // call the function with inputs
+        expect(graph).toEqual(disjointPairOverlapsGraph); // assert that the output is correct
     });
 });

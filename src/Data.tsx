@@ -374,6 +374,74 @@ export const threeRangesTwoDisjointOverlappingPairsGraph: EventGraph = [
     ]
 ]
 
+export const range4a: Event = {
+    title: "Range 4a",
+    startDate: new Date(2010, 6),
+    endDate: new Date(2012, 1),
+}
+
+export const range5a: Event = {
+    title: "Range 5a",
+    startDate: new Date(2012, 6),
+    endDate: new Date(2013, 1),
+}
+
+export const threeRangesOneOverlappingPair: Event[] = [
+    range3,
+    range4a,
+    range5a
+]
+
+export const threeRangesOneOverlappingPairsGraph: EventGraph = [
+    [
+        [
+            range3
+        ],
+        [
+            range4a
+        ],
+    ],
+    range5a
+]
+
+export const range3b: Event = {
+    title: "Range 3b",
+    startDate: new Date(2010, 0),
+    endDate: new Date(2012, 6),
+}
+
+export const range4b: Event = {
+    title: "Range 4b",
+    startDate: new Date(2010, 6),
+    endDate: new Date(2011, 6),
+}
+
+export const range5b: Event = {
+    title: "Range 5b",
+    startDate: new Date(2012, 1),
+    endDate: new Date(2013, 1),
+}
+
+export const disjointPairOverlaps: Event[] = [
+    range3b,
+    range4b,
+    range5b
+]
+
+export const disjointPairOverlapsGraph: EventGraph = [
+    [
+        [
+            range3b
+        ],
+        [
+            range4b,
+        ],
+        [
+            range5b
+        ]
+    ]
+]
+
 export const adamsLinkedIn: Event[] = [
     {
         title: "Founder",
