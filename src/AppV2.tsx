@@ -68,6 +68,7 @@ enum BubbleSide {
 
 interface EventRangeProps {
     event: Event,
+    y?: number,
 }
 
 const formatDate = (date?: Date): string | undefined => {
@@ -100,7 +101,7 @@ const monthDelta = (date1: Date, date2: Date): number => {
     return totalMonths;
 }
 
-const EventRange: React.FC<EventRangeProps> = ({ event }) => {
+const EventRange: React.FC<EventRangeProps> = ({ event, y }) => {
     const eventRef = useRef<HTMLDivElement | null>(null)
     const [rect, setRect] = useState<DOMRect | null>(null)
 
@@ -113,10 +114,13 @@ const EventRange: React.FC<EventRangeProps> = ({ event }) => {
         }
     }, [eventRef])
 
-    const height = monthDelta(event.startDate!, event.endDate!) * (YEAR_HEIGHT / 12)
+    const styleDict = {
+        height: `${monthDelta(event.startDate!, event.endDate!) * (YEAR_HEIGHT / 12)}px`,
+        top: y ? `${y}px` : undefined,
+    }
 
     return (
-        <div className="event-range" ref={eventRef} style={{ height: `${height}px` }}>
+        <div className="event-range" ref={eventRef} style={styleDict}>
             <EventBubble event={event} instanceRect={rect} />
         </div>
     );
@@ -271,45 +275,6 @@ interface EventGroupProps {
     group: EventGroup;
 }
 
-const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
-    const context = useContext(BranchContext);
-
-    // TODO this should probably be moved to EventTrack, which is the most
-    // pervasive element in the timeline and therefore we could do it once with just that element
-    const groupRef = useRef<HTMLDivElement | null>(null);
-    const addTimelineRef = useContext(TimelineRefContext);
-
-    useEffect(() => {
-        addTimelineRef(groupRef.current);
-    }, [addTimelineRef]);
-
-    // Sequences are aka "tracks" are aka "columns"
-    const sequences = group.map((track, i) => {
-        return <EventGraphComponent graph={track} bubbleRefOverrides={[]} />
-    })
-
-    const isLeftBranch = (i: number, length: number): boolean => {
-        return i < (length / 2)
-    }
-
-    return (
-        <div className="event-group">
-            <div className="event-sequence-container" ref={groupRef}>
-                {
-                    sequences.map((sequence, i) => {
-                        const currentContext = context ? context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
-                        return (
-                            <BranchContext.Provider value={currentContext}>
-                                <div className="event-sequence">{sequence}</div>
-                            </BranchContext.Provider>
-                        )
-                    })
-                }
-            </div>
-        </div>
-    )
-}
-
 interface EventTrackProps {
     children: ReactNode;
 }
@@ -326,7 +291,6 @@ const EventTrack: React.FC<EventTrackProps> = ({ children }) => {
 
 interface EventGraphProps {
     graph: EventGraph;
-    bubbleRefOverrides?: HTMLDivElement[];
 }
 
 const printGraph = (graph: EventGraph, indent: number = 4): string => {
@@ -359,7 +323,78 @@ const printGraph = (graph: EventGraph, indent: number = 4): string => {
     return s
 }
 
-const EventGraphComponent: React.FC<EventGraphProps> = ({ graph }) => {
+const minDate = (group: EventGroup): Date => {
+    return (group[0][0].startDate || group[0][0].date)!
+}
+
+const maxDate = (group: EventGroup): Date => {
+    const last = group[group.length - 1][0] as Event
+    return (last.endDate || last.date)!
+}
+
+const groupHeight = (group: EventGroup): number => {
+    return monthDelta(minDate(group), maxDate(group)) * (YEAR_HEIGHT / 12) + 48 // 48 = border widths + track size on either side
+}
+
+const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
+    const context = useContext(BranchContext);
+
+    // TODO this should probably be moved to EventTrack, which is the most
+    // pervasive element in the timeline and therefore we could do it once with just that element
+    const groupRef = useRef<HTMLDivElement | null>(null);
+    const addTimelineRef = useContext(TimelineRefContext);
+
+    useEffect(() => {
+        addTimelineRef(groupRef.current);
+    }, [addTimelineRef]);
+
+    // Sequences are aka "tracks" are aka "columns"
+    const sequences = group.map((track, i) => {
+        return <EventGraphComponent graph={track} minDate={minDate(group)} />
+    })
+
+    const isLeftBranch = (i: number, length: number): boolean => {
+        return i < (length / 2)
+    }
+
+    return (
+        <div className="event-group">
+            <div className="event-sequence-container" style={{ height: groupHeight(group) }} ref={groupRef}>
+                {
+                    sequences.map((sequence, i) => {
+                        const currentContext = context ? context as string : (isLeftBranch(i, sequences.length) ? BubbleSide.LEFT : BubbleSide.RIGHT)
+                        return (
+                            <BranchContext.Provider value={currentContext}>
+                                <div className="event-sequence">{sequence}</div>
+                            </BranchContext.Provider>
+                        )
+                    })
+                }
+            </div>
+        </div>
+    )
+}
+
+interface EventGraphProps {
+    graph: EventGraph;
+    minDate?: Date;
+}
+
+const offsetFromMinDate = (startDate: Date, minDate?: Date): number | null => {
+    if (!minDate) {
+        return null
+    }
+    const delta = monthDelta(minDate, startDate) * (YEAR_HEIGHT / 12)
+    console.log(`delta ${delta}`)
+    return delta
+}
+
+// NOTE: this is becoming very LinkedIn-specific I would predict.
+// Assumptions:
+// - There aren't N layers of recursively nested Groups, just one Group deep max
+// - Group cols/sequences only have a single Event, no multi-event Tracks nested within Groups
+// - The group height is based on a single layer of ranges nested in cols
+const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, minDate }) => {
     let nodes: JSX.Element[] = []
     let track: JSX.Element[] = []
 
@@ -369,7 +404,7 @@ const EventGraphComponent: React.FC<EventGraphProps> = ({ graph }) => {
         if (!Array.isArray(eventOrGroup)) {
             const event = eventOrGroup as Event
             if (event.startDate) {
-                track.push(<EventRange event={event} />)
+                track.push(<EventRange event={event} y={offsetFromMinDate(event.startDate, minDate)} />)
             } else if (event.date) {
                 track.push(<EventInstance event={event} />)
             }
@@ -620,8 +655,6 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             setGraph(graph)
         }
     }
-
-    console.log(buildGraph(d.threeRangesOneOverlappingPair))
 
     return (
         <div className="timeline">
