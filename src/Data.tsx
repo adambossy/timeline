@@ -688,77 +688,77 @@ export const hangsGraph: EventGraph = [
 
 export const sergiosLinkedIn: Event[] = [
     {
-        title: 'Chief Technology OfficerChief Technology Officer',
-        company: 'Bulk MRO Industrial SupplyBulk MRO Industrial Supply',
+        title: 'Chief Technology Officer',
+        company: 'Bulk MRO Industrial Supply',
         startDate: new Date(2022, 0),
         endDate: TODAY,
         location: 'New York, United StatesNew York, United States'
     },
     {
-        title: 'Fractional CTO | Tech Consultant & AdvisorFractional CTO | Tech Consultant & Advisor',
-        company: 'SergioPereira.ioSergioPereira.io',
+        title: 'Fractional CTO | Tech Consultant & Advisor',
+        company: 'SergioPereira.io',
         startDate: new Date(2017, 0),
         endDate: TODAY,
         location: 'Unknown'
     },
     {
-        title: 'Content Creator & Public SpeakerContent Creator & Public Speaker',
+        title: 'Content Creator & Public Speaker',
         company: '',
         startDate: new Date(2018, 0),
         endDate: TODAY,
         location: 'Unknown'
     },
     {
-        title: 'FounderFounder',
-        company: 'Remote Work AcademyRemote Work Academy',
+        title: 'Founder',
+        company: 'Remote Work Academy',
         startDate: new Date(2022, 7),
         endDate: TODAY,
         location: 'Unknown'
     },
     {
-        title: 'Co AuthorCo Author',
-        company: 'The CYCLES BookThe CYCLES Book',
+        title: 'Co Author',
+        company: 'The CYCLES Book',
         startDate: new Date(2018, 0),
         endDate: TODAY,
         location: 'Unknown'
     },
     {
-        title: 'Fractional CTOFractional CTO',
-        company: 'Signature LacrosseSignature Lacrosse',
+        title: 'Fractional CTO',
+        company: 'Signature Lacrosse',
         startDate: new Date(2021, 9),
         endDate: new Date(2022, 1),
-        location: 'Tampa, Florida, United StatesTampa, Florida, United States'
+        location: 'Tampa, Florida, United States'
     },
     {
-        title: 'Co-Founder & CTOCo-Founder & CTO',
-        company: 'StudentFinanceStudentFinance',
+        title: 'Co-Founder & CTO',
+        company: 'StudentFinance',
         startDate: new Date(2019, 0),
         endDate: new Date(2021, 10),
-        location: 'London, England, United KingdomLondon, England, United Kingdom'
+        location: 'London, England, United Kingdom'
     },
     {
-        title: 'Co-Founder & CTOCo-Founder & CTO',
-        company: 'Tech HQTech HQ',
+        title: 'Co-Founder & CTO',
+        company: 'Tech HQ',
         startDate: new Date(2018, 2),
         endDate: new Date(2020, 5),
-        location: 'London, United KingdomLondon, United Kingdom'
+        location: 'London, United Kingdom'
     },
     {
-        title: 'Fractional CTOFractional CTO',
-        company: 'Rightfoot · Part-timeRightfoot · Part-time',
+        title: 'Fractional CTO',
+        company: 'Rightfoot · Part-time',
         startDate: new Date(2019, 9),
         endDate: new Date(2019, 11),
-        location: 'San Francisco Bay AreaSan Francisco Bay Area'
+        location: 'San Francisco Bay Area'
     },
     {
-        title: 'Fractional Technical Product ManagerFractional Technical Product Manager',
-        company: 'DeepCode (The Software Revolution) by Snyk.io · Part-timeDeepCode (The Software Revolution) by Snyk.io · Part-time',
+        title: 'Fractional Technical Product Manager',
+        company: 'DeepCode (The Software Revolution) by Snyk.io · Part-time',
         startDate: new Date(2018, 10),
         endDate: new Date(2019, 9),
         location: 'Zurich, SwitzerlandZurich, Switzerland'
     },
     {
-        title: 'Fractional CTOFractional CTO',
+        title: 'Fractional CTO',
         company: 'PaybyrdPaybyrd',
         startDate: new Date(2019, 2),
         endDate: new Date(2019, 8),

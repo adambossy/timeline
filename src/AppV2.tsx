@@ -266,6 +266,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
             )}
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
+            <h2>{event.company}</h2>
             {SHOW_VECTORS && vectors}
         </div>
     )
@@ -329,8 +330,7 @@ const minDate = (group: EventGroup): Date => {
 }
 
 const maxDate = (group: EventGroup): Date => {
-    const last = group[group.length - 1][0] as Event
-    return (last.endDate || last.date)!
+    return new Date(Math.max(...group.map((t) => (t[0].endDate || t[0].date)!)))
 }
 
 const groupHeight = (group: EventGroup): number => {
@@ -386,7 +386,6 @@ const offsetFromMinDate = (startDate: Date, minDate?: Date): number | undefined 
         return undefined
     }
     const delta = monthDelta(minDate, startDate) * (YEAR_HEIGHT / 12)
-    console.log(`delta ${delta}`)
     return delta
 }
 
@@ -553,7 +552,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                     }
                 } else {
                     cols.push([e1])
-                    colMax = Math.max(maxA, maxB)
+                    colMax = Math.max(maxA, maxB, colMax)
                 }
             }
         } else {
@@ -708,21 +707,23 @@ function AppV2() {
             <hr />
             <Timeline graph={deepCopy(d.threeColumnsGraph)} />
             <hr />
-            <Timeline graph={deepCopy(d.hangsGraph)} />
-            <hr />
-            <Timeline graph={deepCopy(d.adamsGraph)} />
-            <hr />
-            <Timeline graph={deepCopy(d.sergiosGraph)} />
-            <hr />
-            <Timeline graph={deepCopy(d.largePyramidGraph)} />
-            <hr />
-            */}
             <Timeline events={deepCopy(d.threeRangesTwoDisjointOverlappingPairs)} />
             <hr />
             <Timeline events={deepCopy(d.threeRangesOneOverlappingPair)} />
             <hr />
             <Timeline events={deepCopy(d.disjointPairOverlaps)} />
             <hr />
+            */}
+            <Timeline events={deepCopy(d.hangsLinkedIn)} />
+            <hr />
+            <Timeline events={deepCopy(d.adamsLinkedIn)} />
+            <hr />
+            <Timeline events={deepCopy(d.sergiosLinkedIn)} />
+            <hr />
+            {/*
+            <Timeline graph={deepCopy(d.largePyramidGraph)} />
+            <hr />
+            */}
         </React.Fragment>
     )
 }
