@@ -324,7 +324,8 @@ const printGraph = (graph: EventGraph, indent: number = 4): string => {
 }
 
 const minDate = (group: EventGroup): Date => {
-    return (group[0][0].startDate || group[0][0].date)!
+    const first = group[0][0] as Event
+    return (first.startDate || first.date)!
 }
 
 const maxDate = (group: EventGroup): Date => {
@@ -380,9 +381,9 @@ interface EventGraphProps {
     minDate?: Date;
 }
 
-const offsetFromMinDate = (startDate: Date, minDate?: Date): number | null => {
+const offsetFromMinDate = (startDate: Date, minDate?: Date): number | undefined => {
     if (!minDate) {
-        return null
+        return undefined
     }
     const delta = monthDelta(minDate, startDate) * (YEAR_HEIGHT / 12)
     console.log(`delta ${delta}`)
