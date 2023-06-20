@@ -1,10 +1,10 @@
-import { cloneDeep, isEqual } from 'lodash';
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './App.css';
-import * as d from './Data'
-import { Event, EventGraph, EventGroup, Rect, Vector } from './Data'
-import deepCopy from './DeepCopy'
 
+import { isEqual } from 'lodash';
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+
+import * as d from './Data';
+import deepCopy from './DeepCopy';
 
 const YEAR_HEIGHT = 100 // Super simple way of starting
 const SHOW_VECTORS = false

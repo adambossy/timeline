@@ -1,20 +1,19 @@
-import { render, screen } from '@testing-library/react';
-import { buildGraph } from './App'
+import { buildGraph } from './App';
 import {
-    singleInstance,
-    singleInstanceGraph,
-    twoInstances,
-    twoInstancesGraph,
     collidingInstances,
     collidingInstancesGraph,
+    disjointPairOverlaps,
+    disjointPairOverlapsGraph,
     miniPyramid,
     miniPyramidGraph,
-    threeRangesTwoDisjointOverlappingPairs,
-    threeRangesTwoDisjointOverlappingPairsGraph,
+    singleInstance,
+    singleInstanceGraph,
     threeRangesOneOverlappingPair,
     threeRangesOneOverlappingPairsGraph,
-    disjointPairOverlaps,
-    disjointPairOverlapsGraph
+    threeRangesTwoDisjointOverlappingPairs,
+    threeRangesTwoDisjointOverlappingPairsGraph,
+    twoInstances,
+    twoInstancesGraph
 } from './Data';
 
 describe('builds graphs correctly', () => {
