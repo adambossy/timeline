@@ -330,7 +330,10 @@ const minDate = (group: EventGroup): Date => {
 }
 
 const maxDate = (group: EventGroup): Date => {
-    return new Date(Math.max(...group.map((t) => (t[0].endDate || t[0].date)!)))
+    return new Date(Math.max(...group.map((t) => {
+        const first = t[0] as Event
+        return (first.endDate || first.date)!.getTime()
+    })))
 }
 
 const groupHeight = (group: EventGroup): number => {
@@ -552,7 +555,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                     }
                 } else {
                     cols.push([e1])
-                    colMax = Math.max(maxA, maxB, colMax)
+                    colMax = Math.max(maxA, maxB, colMax? colMax : 0)
                 }
             }
         } else {
