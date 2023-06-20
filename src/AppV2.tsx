@@ -325,11 +325,15 @@ const printGraph = (graph: EventGraph, indent: number = 4): string => {
 }
 
 const minDate = (group: EventGroup): Date => {
-    return (group[0][0].startDate || group[0][0].date)!
+    const first = group[0][0] as Event
+    return (first.startDate || first.date)!
 }
 
 const maxDate = (group: EventGroup): Date => {
-    return new Date(Math.max(...group.map((t) => (t[0].endDate || t[0].date)!)))
+    return new Date(Math.max(...group.map((t) => {
+        const first = t[0] as Event
+        return (first.endDate || first.date)!.getTime()
+    })))
 }
 
 const groupHeight = (group: EventGroup): number => {
@@ -380,9 +384,9 @@ interface EventGraphProps {
     minDate?: Date;
 }
 
-const offsetFromMinDate = (startDate: Date, minDate?: Date): number | null => {
+const offsetFromMinDate = (startDate: Date, minDate?: Date): number | undefined => {
     if (!minDate) {
-        return null
+        return undefined
     }
     const delta = monthDelta(minDate, startDate) * (YEAR_HEIGHT / 12)
     return delta
@@ -551,7 +555,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                     }
                 } else {
                     cols.push([e1])
-                    colMax = Math.max(maxA, maxB, colMax)
+                    colMax = Math.max(maxA, maxB, colMax? colMax : 0)
                 }
             }
         } else {
