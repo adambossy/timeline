@@ -4,7 +4,9 @@ import { isEqual } from 'lodash';
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import * as d from './Data';
+import { Event, EventGraph, EventGroup, Rect, Vector } from './Data'
 import deepCopy from './DeepCopy';
+import VectorComponent from './components/Vector';
 
 const YEAR_HEIGHT = 100 // Super simple way of starting
 const SHOW_VECTORS = false
@@ -108,36 +110,6 @@ const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
 }
 
 
-interface VectorProps {
-    width: number;
-    height: number;
-    dx: number;
-    dy: number;
-}
-
-const VectorComponent: React.FC<VectorProps> = ({ width, height, dx, dy }) => {
-    const angle = Math.atan2(dy, dx) * 180 / Math.PI
-    const length = Math.sqrt(dx * dx + dy * dy)
-
-    const vectorStyle = {
-        left: ((width - length) / 2) + "px",
-        top: (height / 2 - 5) + "px",  // MAGIC NUMBER ALERT .point border-top-width
-        width: length + "px",
-        Transform: "rotate(" + angle + "deg)",
-        WebkitTransform: "rotate(" + angle + "deg)"
-    }
-    const lineStyle = {
-        marginLeft: length / 2 + "px",
-        width: Math.max(0, length / 2 - 16) + "px" // MAGIC NUMBER ALERT .point border-left-width
-    }
-    return (
-        <div className="Vector" style={vectorStyle}>
-            <div className="Vector-stem" style={lineStyle}></div>
-            <div className="Vector-point"></div>
-        </div>
-    )
-}
-
 interface LineProps {
     bubbleRect: Rect,
     instanceRect: DOMRect, // TODO change to ? and remove null - need to propagate this up the component tree
@@ -204,7 +176,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
     const vectors = SHOW_VECTORS && (event.vectors || []).map((v, i) => {
         const [_, dx, dy] = v
         if (event.rect) {
-            return <VectorComponent width={event.rect.width} height={event.rect.height} dx={dx} dy={dy} />
+            return <VectorComponent boxWidth={event.rect.width} boxHeight={event.rect.height} dx={dx} dy={dy} />
         }
     })
 
