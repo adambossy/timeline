@@ -1,6 +1,5 @@
 import { Event } from "../Data";
 
-
 export const formatDate = (date?: Date): string | undefined => {
     if (typeof date === "undefined") {
         return undefined

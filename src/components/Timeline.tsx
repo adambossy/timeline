@@ -1,11 +1,18 @@
 import { isEqual } from 'lodash';
 import React, { useCallback, useEffect, useState } from "react";
-import { buildGraph } from "../App";
 import { Event, EventGraph, Rect, Vector } from "../Data";
 import deepCopy from "../DeepCopy";
-import { isOverlapping } from "../util/Overlap";
 import EventGraphComponent from "./EventGraph";
 import { BubbleRefContext, TimelineRefContext } from "./contexts";
+
+export const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
+    return maxA >= minB && maxB >= minA
+}
+
+export const isOverlapping = (rectA: Rect, rectB: Rect) => {
+    return projectionOverlaps(rectA.x, rectA.x + rectA.width, rectB.x, rectB.x + rectB.width) &&
+        projectionOverlaps(rectA.y, rectA.y + rectA.height, rectB.y, rectB.y + rectB.height)
+}
 
 const rectFromRef = (ref: HTMLDivElement): Rect => {
     const rect = ref.getBoundingClientRect()
@@ -80,6 +87,55 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
             }
         })
     })
+}
+
+// NOTE: there are elements to this function that may be LinkedIn-specific 
+export const buildGraph = (sortedEvents: Event[]): EventGraph => {
+    // let graph = [[sortedEvents[0]]];
+    let graph: EventGraph = []
+    let cols = []
+    let colMax: number | null = null
+    for (let i = 0; i < sortedEvents.length; i++) {
+        const e1 = sortedEvents[i]
+        if (i + 1 < sortedEvents.length) {
+            const e2 = sortedEvents[i + 1]
+            const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
+            const maxA = e1.endDate && e1.endDate.getTime() || e1.date && e1.date.getTime()
+            const minB = e2.startDate && e2.startDate.getTime() || e2.date && e2.date.getTime()
+            const maxB = e2.endDate && e2.endDate.getTime() || e2.date && e2.date.getTime()
+            
+            // Do pairwise matching against sorted adjacent events, and end
+            // the group once there's no more overlap with the previous event
+            if (minA && maxA  && minB && maxB) {
+                if (!projectionOverlaps(minA, colMax || maxA, minB, maxB)) {
+                    if (cols.length) { // overlap ends, so end col
+                        cols.push([e1])
+                        graph.push(cols)
+                        cols = []
+                        colMax = null
+                    } else {
+                        graph.push(e1)
+                    }
+                } else {
+                    cols.push([e1])
+                    colMax = Math.max(maxA, maxB, colMax? colMax : 0)
+                }
+            }
+        } else {
+            const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
+            if (colMax && minA && colMax >= minA) {
+                cols.push([e1])
+            } else {
+                graph.push(e1)
+            }
+        }
+    }
+
+    if (cols.length) {
+        graph.push(cols)
+    }
+
+    return graph
 }
 
 interface TimelineProps {
