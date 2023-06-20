@@ -1,6 +1,6 @@
 import { cloneDeep, isEqual } from 'lodash';
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import './AppV2.css';
+import './App.css';
 import * as d from './Data'
 import { Event, EventGraph, EventGroup, Rect, Vector } from './Data'
 import deepCopy from './DeepCopy'
@@ -633,7 +633,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     )
 }
 
-function AppV2() {
+function App() {
     return (
         <React.Fragment>
             {/*
@@ -688,4 +688,4 @@ function AppV2() {
     )
 }
 
-export default AppV2;
+export default App;

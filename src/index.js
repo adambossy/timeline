@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import AppV1 from './AppV1';
-import AppV2 from './AppV2';
+import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 import {
@@ -12,16 +11,8 @@ import {
 
 const router = createBrowserRouter([
     {
-        path: "/v2",
-        element: <AppV2 />,
-    },
-    {
-        path: "/v1",
-        element: <AppV1 />,
-    },
-    {
         path: "/",
-        element: <AppV1 />,
+        element: <App />,
     }
 ])
 
