@@ -6,7 +6,9 @@ import { BranchContext } from "./contexts";
 
 interface LineProps {
     bubbleRect: Rect,
-    instanceRect: DOMRect, // TODO change to ? and remove null - need to propagate this up the component tree
+    // TODO change to ? and remove null - need to propagate this up the
+    // component tree
+    instanceRect: DOMRect,
 }
 
 const Line: React.FC<LineProps> = ((props) => {

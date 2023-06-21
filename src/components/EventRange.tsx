@@ -18,7 +18,9 @@ const EventRange: React.FC<EventRangeProps> = ({ event, y }) => {
         if (eventRef.current) {
             const _rect = eventRef.current.getBoundingClientRect()
             if (_rect) {
-                setRect(_rect) // TODO evaluate whether this is the best state to change to force re-render
+                // TODO evaluate whether this is the best state to change to
+                // force re-render
+                setRect(_rect)
             }
         }
     }, [eventRef])

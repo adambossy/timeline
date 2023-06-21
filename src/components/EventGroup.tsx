@@ -30,7 +30,8 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     const context = useContext(BranchContext);
 
     // TODO this should probably be moved to EventTrack, which is the most
-    // pervasive element in the timeline and therefore we could do it once with just that element
+    // pervasive element in the timeline and therefore we could do it once with
+    // just that element
     const groupRef = useRef<HTMLDivElement | null>(null);
     const addTimelineRef = useContext(TimelineRefContext);
 

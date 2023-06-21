@@ -21,10 +21,10 @@ interface EventGraphProps {
     minDate?: Date;
 }
 
-// NOTE: this is becoming very LinkedIn-specific I would predict.
-// Assumptions:
+// NOTE: this is becoming very LinkedIn-specific. Assumptions:
 // - There aren't N layers of recursively nested Groups, just one Group deep max
-// - Group cols/sequences only have a single Event, no multi-event Tracks nested within Groups
+// - Group cols/sequences only have a single Event, no multi-event Tracks nested
+//   within Groups
 // - The group height is based on a single layer of ranges nested in cols
 const EventGraphComponent: React.FC<EventGraphProps> = ({ graph, minDate }) => {
     let nodes: JSX.Element[] = []

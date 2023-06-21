@@ -20,7 +20,6 @@ function App() {
             <hr />
             <Timeline graph={deepCopy(d.mixedEventsGraph)} />
             <hr />
-            <hr />
             <Timeline graph={deepCopy(d.collidingInstancesGraph)} />
             <hr />
             <Timeline graph={deepCopy(d.miniPyramidGraph)} />
@@ -33,6 +32,7 @@ function App() {
             <hr />
             <Timeline graph={deepCopy(d.medPyramidGraph)} />
             <hr />
+            <Timeline graph={deepCopy(d.largePyramidGraph)} />
             <hr />
             <Timeline graph={deepCopy(d.miniPyramidWeightedRightGraph)} />
             <hr />
@@ -53,10 +53,6 @@ function App() {
             <hr />
             <Timeline events={deepCopy(d.sergiosLinkedIn)} />
             <hr />
-            {/*
-            <Timeline graph={deepCopy(d.largePyramidGraph)} />
-            <hr />
-            */}
         </React.Fragment>
     )
 }
