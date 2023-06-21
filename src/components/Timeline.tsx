@@ -240,7 +240,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             setGraph(graph)
             setRenderedOnce(true)
         }
-    })
+    }, [eventAndRefPairs, renderedOnce, graph, timelineRefs])
 
     const step = () => {
         if (graph) {
@@ -263,8 +263,8 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             <BubbleRefContext.Provider value={addBubbleRef}>
                 <TimelineRefContext.Provider value={addTimelineRef}>
                     {
-                        _graph && <EventGraphComponent graph={_graph} /> ||
-                        graph && <EventGraphComponent graph={graph} />
+                        (_graph && <EventGraphComponent graph={_graph} />) ||
+                        (graph && <EventGraphComponent graph={graph} />)
                     }
                 </TimelineRefContext.Provider>
             </BubbleRefContext.Provider>

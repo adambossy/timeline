@@ -8,7 +8,6 @@ function deepCopy<T>(obj: T): T {
     // DON'T copy because there's no use in having orphaned DOM nodes floating around
     if (obj instanceof Node) {
         return obj;
-        return copy;
     }
 
     // Handle Date
