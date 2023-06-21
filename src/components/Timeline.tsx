@@ -115,10 +115,10 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
         // include the next event in the active group.
         if (i + 1 < sortedEvents.length) {
             const e2 = sortedEvents[i + 1]
-            const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
-            const maxA = e1.endDate && e1.endDate.getTime() || e1.date && e1.date.getTime()
-            const minB = e2.startDate && e2.startDate.getTime() || e2.date && e2.date.getTime()
-            const maxB = e2.endDate && e2.endDate.getTime() || e2.date && e2.date.getTime()
+            const minA = e1.startDate?.getTime() || e1.date?.getTime()
+            const maxA = e1.endDate?.getTime() || e1.date?.getTime()
+            const minB = e2.startDate?.getTime() || e2.date?.getTime()
+            const maxB = e2.endDate?.getTime() || e2.date?.getTime()
 
             // Do pairwise matching against sorted adjacent events, and end
             // the group once there's no more overlap with the previous event
@@ -144,7 +144,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                     // Update the colMax to contain the new maxDate. Sometimes,
                     // the max date is set by e1 instead of e2
                     group.push([e1])
-                    maxTimeInGroup = Math.max(maxA, maxB, maxTimeInGroup ? maxTimeInGroup : 0)
+                    maxTimeInGroup = Math.max(maxA, maxB, maxTimeInGroup ?? 0)
                 }
             }
         } else {
@@ -152,7 +152,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
             // Treat the last event in the sequence as a special case. First
             // this event, only startDate (or date) is relevant for the overlap
             // calculation
-            const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
+            const minA = e1.startDate?.getTime() || e1.date?.getTime()
 
             // Determine whether to push the last event to the previous group or
             // directly to the main graph
