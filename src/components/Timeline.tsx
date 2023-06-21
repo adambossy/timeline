@@ -102,10 +102,10 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
 export const buildGraph = (sortedEvents: Event[]): EventGraph => {
     let graph: EventGraph = []
 
-    // `cols` or 'columns' are what appear as parallel event tracks in a single
-    // group in the final graph
-    let cols = []
-    let colMax: number | null = null
+    // Events in `group` are what appear as parallel event tracks in the final
+    // graph
+    let group = []
+    let maxTimeInGroup: number | null = null
     for (let i = 0; i < sortedEvents.length; i++) {
         const e1 = sortedEvents[i]
 
@@ -123,28 +123,28 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
             // Do pairwise matching against sorted adjacent events, and end
             // the group once there's no more overlap with the previous event
             if (minA && maxA && minB && maxB) {
-                if (!projectionOverlaps(minA, colMax || maxA, minB, maxB)) {
+                if (!projectionOverlaps(minA, maxTimeInGroup || maxA, minB, maxB)) {
 
-                    // If there is no overlap and the cols array has events,
-                    // push the array of overlapping events (cols) to the graph
-                    // and reset cols array. Otherwise, just push the event
+                    // If there is no overlap and the `group` array has events,
+                    // push the array of overlapping events to the graph and
+                    // reset the `group` array. Otherwise, just push the event
                     // directly to the main graph
-                    if (cols.length) {
-                        cols.push([e1])
-                        graph.push(cols)
-                        cols = []
-                        colMax = null
+                    if (group.length) {
+                        group.push([e1])
+                        graph.push(group)
+                        group = []
+                        maxTimeInGroup = null
                     } else {
                         graph.push(e1)
                     }
                 } else {
-                    // If e1 and e2 overlap, add e1 to the cols array. We'll
+                    // If e1 and e2 overlap, add e1 to the `group` array. We'll
                     // defer pushing e2 to later loops
                     //
                     // Update the colMax to contain the new maxDate. Sometimes,
                     // the max date is set by e1 instead of e2
-                    cols.push([e1])
-                    colMax = Math.max(maxA, maxB, colMax ? colMax : 0)
+                    group.push([e1])
+                    maxTimeInGroup = Math.max(maxA, maxB, maxTimeInGroup ? maxTimeInGroup : 0)
                 }
             }
         } else {
@@ -156,17 +156,17 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
 
             // Determine whether to push the last event to the previous group or
             // directly to the main graph
-            if (colMax && minA && colMax >= minA) {
-                cols.push([e1])
+            if (maxTimeInGroup && minA && maxTimeInGroup >= minA) {
+                group.push([e1])
             } else {
                 graph.push(e1)
             }
         }
     }
 
-    // If cols is dangling, make sure it gets attached to the graph
-    if (cols.length) {
-        graph.push(cols)
+    // If `group` is dangling, make sure it gets attached to the graph
+    if (group.length) {
+        graph.push(group)
     }
 
     return graph
