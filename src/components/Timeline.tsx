@@ -16,7 +16,7 @@ export const isOverlapping = (rectA: Rect, rectB: Rect) => {
 
 const rectFromRef = (ref: HTMLDivElement): Rect => {
     const rect = ref.getBoundingClientRect()
-    return  {
+    return {
         x: rect.x,
         y: rect.y,
         styleX: ref.offsetLeft,
@@ -36,18 +36,21 @@ const centerY = (rect: Rect) => {
 const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timelineRefs: HTMLDivElement[]) => {
     let vectorMatrix: Vector[][] = []
 
+    // Set up empty vector matrix and create usable data instances from DOM nodes if its the first run
     eventAndRefPairs.forEach(([event, ref], i) => {
         vectorMatrix.push([])
         event.vectors = vectorMatrix[i] // reset vectors
         if (!event.rect) {
-            event.rect = rectFromRef(ref) 
+            event.rect = rectFromRef(ref)
         }
     })
 
     for (let i = 0; i < eventAndRefPairs.length; i++) {
-        const [eventA, refA] = eventAndRefPairs[i]
+        const [eventA, _] = eventAndRefPairs[i]
+
+        // Compute vectors between each pair of events
         for (let j = i + 1; j < eventAndRefPairs.length; j++) {
-            const [eventB, refB] = eventAndRefPairs[j]
+            const [eventB, _] = eventAndRefPairs[j]
             if (eventA.rect && eventB.rect && eventA.vectors && eventB.vectors) {
                 const dx = centerX(eventB.rect) - centerX(eventA.rect)
                 const dy = centerY(eventB.rect) - centerY(eventA.rect)
@@ -56,11 +59,12 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
             }
         }
 
+        // Compute vectors between events and event track DOM objects
         // TODO should probably merge all these vectors into a single one
         for (let j = 0; j < timelineRefs.length; j++) {
             const timelineRef = timelineRefs[j]
             if (eventA.rect && eventA.vectors) {
-                const timelineRect = rectFromRef(timelineRef) 
+                const timelineRect = rectFromRef(timelineRef)
                 const dx = centerX(timelineRect) - centerX(eventA.rect)
                 const dy = centerY(timelineRect) - centerY(eventA.rect)
                 eventA.vectors.push([timelineRect, dx, dy])
@@ -73,12 +77,13 @@ const computeVectorMatrix = (eventAndRefPairs: [Event, HTMLDivElement][], timeli
 
 const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
 
+    // Once vectors are computed, apply them to DOM nodes to separate events from each other
     eventAndRefPairs.forEach(([event, ref], i) => {
         (event.vectors || []).forEach((vector, i) => {
             let [otherRect, dx, dy] = vector
             if (event.rect && isOverlapping(event.rect, otherRect)) {
-                let offsetX = dx / 4
-                let offsetY = dy / 16
+                let offsetX = dx / 4  // MAGIC NUMBER ALERT - constant used as a fudge factor to determine how forcefully event objects repel from one another
+                let offsetY = dy / 16 // MAGIC NUMBER ALERT - slower constant for vertical than horizontal to bias toward making everything fit on a screen
 
                 event.rect.x -= offsetX
                 event.rect.y -= offsetY
@@ -89,26 +94,42 @@ const applyVectors = (eventAndRefPairs: [Event, HTMLDivElement][]) => {
     })
 }
 
-// NOTE: there are elements to this function that may be LinkedIn-specific 
+// This function is primarily intended to take a list of jobs (or "events" in
+// the parlance of this app) that are scraped from an individual's LinkedIn
+// profile. The events may or may not overlap with one another. This function
+// will find subsequent runs of events that have overlapping dates and create an
+// EventGraph that the Timeline can process and render.
 export const buildGraph = (sortedEvents: Event[]): EventGraph => {
-    // let graph = [[sortedEvents[0]]];
     let graph: EventGraph = []
+
+    // `cols` or 'columns' are what appear as parallel event tracks in a single
+    // group in the final graph
     let cols = []
     let colMax: number | null = null
     for (let i = 0; i < sortedEvents.length; i++) {
         const e1 = sortedEvents[i]
+
+        // This function iterates through pairs of sorted adjacent events,
+        // identifying whether two adjacent events should be grouped. If a group
+        // already exists from a previous iteration, we determine whether to
+        // include the next event in the active group.
         if (i + 1 < sortedEvents.length) {
             const e2 = sortedEvents[i + 1]
             const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
             const maxA = e1.endDate && e1.endDate.getTime() || e1.date && e1.date.getTime()
             const minB = e2.startDate && e2.startDate.getTime() || e2.date && e2.date.getTime()
             const maxB = e2.endDate && e2.endDate.getTime() || e2.date && e2.date.getTime()
-            
+
             // Do pairwise matching against sorted adjacent events, and end
             // the group once there's no more overlap with the previous event
-            if (minA && maxA  && minB && maxB) {
+            if (minA && maxA && minB && maxB) {
                 if (!projectionOverlaps(minA, colMax || maxA, minB, maxB)) {
-                    if (cols.length) { // overlap ends, so end col
+
+                    // If there is no overlap and the cols array has events,
+                    // push the array of overlapping events (cols) to the graph
+                    // and reset cols array. Otherwise, just push the event
+                    // directly to the main graph
+                    if (cols.length) {
                         cols.push([e1])
                         graph.push(cols)
                         cols = []
@@ -117,12 +138,24 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                         graph.push(e1)
                     }
                 } else {
+                    // If e1 and e2 overlap, add e1 to the cols array. We'll
+                    // defer pushing e2 to later loops
+                    //
+                    // Update the colMax to contain the new maxDate. Sometimes,
+                    // the max date is set by e1 instead of e2
                     cols.push([e1])
-                    colMax = Math.max(maxA, maxB, colMax? colMax : 0)
+                    colMax = Math.max(maxA, maxB, colMax ? colMax : 0)
                 }
             }
         } else {
+
+            // Treat the last event in the sequence as a special case. First
+            // this event, only startDate (or date) is relevant for the overlap
+            // calculation
             const minA = e1.startDate && e1.startDate.getTime() || e1.date && e1.date.getTime()
+
+            // Determine whether to push the last event to the previous group or
+            // directly to the main graph
             if (colMax && minA && colMax >= minA) {
                 cols.push([e1])
             } else {
@@ -131,6 +164,7 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
         }
     }
 
+    // If cols is dangling, make sure it gets attached to the graph
     if (cols.length) {
         graph.push(cols)
     }
