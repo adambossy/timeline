@@ -237,15 +237,12 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
                     break
                 }
             }
-            console.log(`Laid out graph using ${i} iterations.`)
             setGraph(graph)
             setRenderedOnce(true)
         }
     })
 
     const step = () => {
-        console.log('step')
-
         if (graph) {
             const oldGraph = deepCopy(graph)
 
