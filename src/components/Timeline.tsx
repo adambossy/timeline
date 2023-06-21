@@ -139,9 +139,9 @@ export const buildGraph = (sortedEvents: Event[]): EventGraph => {
                     }
                 } else {
                     // If e1 and e2 overlap, add e1 to the `group` array. We'll
-                    // defer pushing e2 to later loops
+                    // defer pushing e2 to a later loop
                     //
-                    // Update the colMax to contain the new maxDate. Sometimes,
+                    // Update the maxTimeInGroup to contain the new maxDate. Sometimes,
                     // the max date is set by e1 instead of e2
                     group.push([e1])
                     maxTimeInGroup = Math.max(maxA, maxB, maxTimeInGroup ?? 0)
