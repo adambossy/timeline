@@ -9,6 +9,12 @@ import Timeline from './components/Timeline';
 function App() {
     return (
         <React.Fragment>
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
             {/*
             <Timeline graph={deepCopy(d.singleInstanceGraph)} />
             <hr />
@@ -53,6 +59,8 @@ function App() {
             <hr />
             <Timeline events={deepCopy(d.sergiosLinkedIn)} />
             <hr />
+            {/*
+            */}
         </React.Fragment>
     )
 }

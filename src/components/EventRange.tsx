@@ -15,6 +15,8 @@ const EventRange: React.FC<EventRangeProps> = ({ event, y }) => {
     const [rect, setRect] = useState<DOMRect | null>(null)
 
     useEffect(() => {
+        console.log('EventRange::useEffect')
+
         if (eventRef.current) {
             const _rect = eventRef.current.getBoundingClientRect()
             if (_rect) {

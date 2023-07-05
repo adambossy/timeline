@@ -11,6 +11,8 @@ const EventInstance: React.FC<EventInstanceProps> = ({ event }) => {
     const [rect, setRect] = useState<DOMRect | null>(null)
 
     useEffect(() => {
+        console.log('EventInstance::useEffect')
+
         if (eventRef.current) {
             const _rect = eventRef.current.getBoundingClientRect()
             if (_rect) {

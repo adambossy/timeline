@@ -36,6 +36,8 @@ const EventGroupComponent: React.FC<EventGroupProps> = ({ group }) => {
     const addTimelineRef = useContext(TimelineRefContext);
 
     useEffect(() => {
+        console.log('EventGroup::useEffect')
+
         addTimelineRef(groupRef.current);
     }, [addTimelineRef]);
 

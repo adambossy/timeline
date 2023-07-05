@@ -200,6 +200,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     const [eventAndRefPairs, setBubbleRefs] = useState<[Event, HTMLDivElement][]>([]);
 
     const addBubbleRef = useCallback((event: Event, el: HTMLDivElement | null) => {
+        console.log('Timeline::addBubbleRef')
         if (el) {
             setBubbleRefs((prevRefs) => [...prevRefs, [event, el]]);
         }
@@ -209,6 +210,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     const [timelineRefs, setTimelineRefs] = useState<HTMLDivElement[]>([]);
 
     const addTimelineRef = useCallback((el: HTMLDivElement | null) => {
+        console.log('Timeline::addTimelineRef')
         if (el) {
             setTimelineRefs((prevRefs) => [...prevRefs, el]);
         }
@@ -218,6 +220,8 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
     const [renderedOnce, setRenderedOnce] = useState(false)
 
     useEffect(() => {
+        console.log('Timeline::useEffect')
+
         // useEffect seemed to get called twice per Timeline, and ignore the first, premature call
         if (!eventAndRefPairs.length) {
             return
@@ -240,12 +244,14 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
             setGraph(graph)
             setRenderedOnce(true)
         }
-    }, [eventAndRefPairs, renderedOnce, graph, timelineRefs])
+    }, [graph])
 
     const step = () => {
         if (graph) {
             const oldGraph = deepCopy(graph)
 
+            console.log(eventAndRefPairs.length)
+            console.log(timelineRefs.length)
             computeVectorMatrix(eventAndRefPairs, timelineRefs)
             applyVectors(eventAndRefPairs)
 

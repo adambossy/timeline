@@ -17,6 +17,8 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
     const addBubbleRef = useContext(BubbleRefContext);
 
     useEffect(() => {
+        console.log('EventBubble::useEffect')
+
         addBubbleRef(event, bubbleRef.current); // Used to pass bubble refs to Timeline component and have it sort among them at the top level
     }, [event, addBubbleRef]);
 
