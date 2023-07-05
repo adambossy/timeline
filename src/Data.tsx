@@ -692,7 +692,7 @@ export const sergiosLinkedIn: Event[] = [
         company: 'Bulk MRO Industrial Supply',
         startDate: new Date(2022, 0),
         endDate: TODAY,
-        location: 'New York, United StatesNew York, United States'
+        location: 'New York, United States'
     },
     {
         title: 'Fractional CTO | Tech Consultant & Advisor',
@@ -755,14 +755,14 @@ export const sergiosLinkedIn: Event[] = [
         company: 'DeepCode (The Software Revolution) by Snyk.io · Part-time',
         startDate: new Date(2018, 10),
         endDate: new Date(2019, 9),
-        location: 'Zurich, SwitzerlandZurich, Switzerland'
+        location: 'Zurich, Switzerland'
     },
     {
         title: 'Fractional CTO',
-        company: 'PaybyrdPaybyrd',
+        company: 'Paybyrd',
         startDate: new Date(2019, 2),
         endDate: new Date(2019, 8),
-        location: 'Amsterdam, North Holland, NetherlandsAmsterdam, North Holland, Netherlands'
+        location: 'Amsterdam, North Holland, Netherlands'
     },
 ]
 
