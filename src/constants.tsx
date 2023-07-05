@@ -1,5 +1,5 @@
 // For debugging
-export const SHOW_VECTORS = false
+export const DEBUG_MODE = true
 
 // For rendering track height
 export const YEAR_HEIGHT = 100

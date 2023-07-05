@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from 'react';
 
-import { BubbleSide, SHOW_VECTORS } from '../constants';
+import { BubbleSide, DEBUG_MODE } from '../constants';
 import { Event } from '../Data';
 import { formatDateRange } from '../util/Date';
 import { BranchContext, BubbleRefContext } from './contexts';
@@ -27,7 +27,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
 
     const bubbleClassNames = `event-range-bubble ${bubbleSide}`
 
-    const vectors = SHOW_VECTORS && (event.vectors || []).map((v) => {
+    const vectors = DEBUG_MODE && (event.vectors || []).map((v) => {
         if (!event.rect) {
             throw new Error("Event rect is null")
         }
@@ -51,7 +51,7 @@ const EventBubble: React.FC<EventBubbleProps> = ({ event, instanceRect }) => {
             <p>{formatDateRange(event)}</p>
             <h1>{event.title}</h1>
             <h2>{event.company}</h2>
-            {SHOW_VECTORS && vectors}
+            {DEBUG_MODE && vectors}
         </div>
     )
 }

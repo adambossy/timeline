@@ -4,6 +4,7 @@ import { Event, EventGraph, Rect, Vector } from "../Data";
 import deepCopy from "../DeepCopy";
 import EventGraphComponent from "./EventGraph";
 import { BubbleRefContext, TimelineRefContext } from "./contexts";
+import { DEBUG_MODE } from '../constants';
 
 export const projectionOverlaps = (minA: number, maxA: number, minB: number, maxB: number) => {
     return maxA >= minB && maxB >= minA
@@ -264,6 +265,15 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
         }
     }
 
+    let stepComponent
+    if (DEBUG_MODE) {
+        stepComponent = (
+            <button className="timeline-step" onClick={step}>
+                Step
+            </button>
+        )
+    }
+
     return (
         <div className="timeline">
             <BubbleRefContext.Provider value={addBubbleRef}>
@@ -274,9 +284,7 @@ const Timeline: React.FC<TimelineProps> = ({ events, graph }) => {
                     }
                 </TimelineRefContext.Provider>
             </BubbleRefContext.Provider>
-            <button className="timeline-step" onClick={step}>
-                Step
-            </button>
+            {stepComponent}
         </div>
     )
 }
